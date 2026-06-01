@@ -1,14 +1,11 @@
 from __future__ import annotations
 
-import hashlib
-import shutil
+import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
-COMPILE_COMMANDS: dict[str, list[str]] = {
-    "cpp": ["g++", "-std=c++17", "-O2", "-Wall", "-o", "{out}", "{src}"],
-    "c": ["gcc", "-O2", "-Wall", "-o", "{out}", "{src}"],
-}
+from light_polygon.platform import get_compiler_executable, is_windows, normalize_executable_path
 
 
 @dataclass
@@ -18,61 +15,83 @@ class CompileResult:
     errors: str = ""
 
 
-def compile_source(source_path: Path, language: str,
-                   cache_dir: Path | None = None,
-                   include_dirs: list[str] | None = None,
-                   defines: list[str] | None = None) -> CompileResult:
-    if language not in COMPILE_COMMANDS:
+DEFAULT_FLAGS = ["-std=c++17", "-O2", "-Wall", "-Wextra"]
+if is_windows():
+    # Static link libgcc/libstdc++ to avoid Windows MSYS2 runtime crashes
+    # (known issue with testlib programs exiting with 0xC0000005)
+    DEFAULT_FLAGS.extend(["-static-libgcc", "-static-libstdc++"])
+
+
+def compile_source(
+    source_path: Path,
+    language: str = "cpp",
+    output_path: Path | None = None,
+    flags: list[str] | None = None,
+    include_dirs: list[str] | None = None,
+    defines: list[str] | None = None,
+) -> CompileResult:
+    """Compile a source file to an executable.
+
+    Args:
+        source_path: Path to the source file.
+        language: Language identifier (cpp, c, etc.).
+        output_path: Optional explicit output path. If None, uses a temp file.
+        flags: Additional compiler flags. If None, uses DEFAULT_FLAGS for C++.
+        include_dirs: List of include directories (-I).
+        defines: List of macro definitions (-D).
+
+    Returns:
+        CompileResult with the path to the compiled executable.
+    """
+    if not source_path.exists():
+        return CompileResult(success=False, errors=f"Source file not found: {source_path}")
+
+    # If it's an interpreted language or already compiled
+    if language not in ("cpp", "c++", "c"):
         return CompileResult(success=True, executable_path=source_path)
 
-    source_hash = hashlib.sha256(source_path.read_bytes()).hexdigest()[:16]
+    if output_path is None:
+        temp_dir = Path(tempfile.mkdtemp(prefix="lp_compile_"))
+        output_path = temp_dir / source_path.stem
 
-    if cache_dir:
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        cached_bin = cache_dir / f"{source_path.stem}_{source_hash}"
-        # g++ on Windows auto-appends .exe; check both variants
-        if cached_bin.exists():
-            return CompileResult(success=True, executable_path=cached_bin)
-        alt_exe = Path(str(cached_bin) + ".exe")
-        if alt_exe.exists():
-            return CompileResult(success=True, executable_path=alt_exe)
-    else:
-        cached_bin = source_path.parent / f"{source_path.stem}.exe"
+    compiler = get_compiler_executable(language)
 
-    cmd_template = COMPILE_COMMANDS[language]
-    cmd = [
-        arg.format(src=str(source_path), out=str(cached_bin))
-        for arg in cmd_template
-    ]
+    cmd = [compiler]
+
+    if flags is not None:
+        cmd.extend(flags)
+    elif language in ("cpp", "c++"):
+        cmd.extend(DEFAULT_FLAGS)
 
     if include_dirs:
         for inc_dir in reversed(include_dirs):
             cmd.insert(1, f"-I{inc_dir}")
+
     if defines:
         for d in defines:
             cmd.insert(1, f"-D{d}")
 
-    import subprocess
+    cmd.extend(["-o", str(output_path), str(source_path)])
+
     try:
         result = subprocess.run(
-            cmd, capture_output=True, text=True, timeout=30,
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
         )
         if result.returncode == 0:
-            # g++ on Windows auto-appends .exe to -o output
-            if not cached_bin.exists():
-                alt = Path(str(cached_bin) + ".exe")
-                if alt.exists():
-                    cached_bin = alt
-            return CompileResult(success=True, executable_path=cached_bin)
+            exe_path = normalize_executable_path(output_path)
+            return CompileResult(success=True, executable_path=exe_path)
         else:
             return CompileResult(
                 success=False,
-                errors=result.stderr or result.stdout,
+                errors=result.stderr or result.stdout or "Compilation failed",
             )
     except subprocess.TimeoutExpired:
         return CompileResult(success=False, errors="Compilation timed out")
     except FileNotFoundError:
         return CompileResult(
             success=False,
-            errors=f"Compiler not found: {cmd[0]}. Install it or use a different language.",
+            errors=f"Compiler not found: {compiler}. Please install g++.",
         )

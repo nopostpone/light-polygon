@@ -26,19 +26,12 @@ def get_testlib_include_dir() -> Path:
     return Path(__file__).parent.parent / "vendor"
 
 
-def get_gen_cache_dir() -> Path:
-    d = get_config().data_dir / "cache" / "generators"
-    d.mkdir(parents=True, exist_ok=True)
-    return d
-
-
 def compile_generator(slug: str, gen_config: GeneratorConfig) -> CompileResult:
     source_path = layout.generators_dir(slug) / gen_config.source
     if not source_path.exists():
         return CompileResult(success=False, errors=f"Generator source not found: {source_path}")
     return compile_source(
         source_path, "cpp",
-        cache_dir=get_gen_cache_dir(),
         include_dirs=[str(get_testlib_include_dir())],
         defines=["FOR_LINUX"],
     )
@@ -62,7 +55,6 @@ def compile_validator(slug: str) -> CompileResult | None:
         return None
     return compile_source(
         source_path, "cpp",
-        cache_dir=get_gen_cache_dir(),
         include_dirs=[str(get_testlib_include_dir())],
         defines=["FOR_LINUX"],
     )

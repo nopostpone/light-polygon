@@ -48,6 +48,10 @@ def generators_dir(slug: str) -> Path:
     return problem_dir(slug) / "generators"
 
 
+def checkers_dir(slug: str) -> Path:
+    return problem_dir(slug) / "checkers"
+
+
 def init_problem_dir(slug: str, title: str, time_limit_ms: int = 1000,
                      memory_limit_mb: int = 256, input_file: str = "stdin",
                      output_file: str = "stdout", is_private: bool = True) -> Path:

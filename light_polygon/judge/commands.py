@@ -5,9 +5,9 @@ from rich.panel import Panel
 from rich.table import Table
 
 from light_polygon.auth.commands import require_user
-from light_polygon.db.connection import init_db, get_connection
+from light_polygon.db.context import db_transaction
 from light_polygon.db.models import Problem, Solution, TestCase
-from light_polygon.judge.engine import judge_all
+from light_polygon.judge.service import judge_all
 from light_polygon.utils.console import console
 
 judge_app = typer.Typer(help="Judging and evaluation", no_args_is_help=True)
@@ -19,6 +19,8 @@ VERDICT_STYLES = {
     "MLE": "[verdict.mle]MLE[/verdict.mle]",
     "RTE": "[verdict.rte]RTE[/verdict.rte]",
     "CE": "[verdict.ce]CE[/verdict.ce]",
+    "PE": "[verdict.pe]PE[/verdict.pe]",
+    "FAIL": "[verdict.fail]FAIL[/verdict.fail]",
 }
 
 
@@ -31,14 +33,13 @@ def run(
     slug: str = typer.Argument(..., help="Problem slug"),
     solution_name: str = typer.Option("", "--solution", "-s", help="Judge only this solution"),
     test_index: int = typer.Option(0, "--test", "-t", help="Judge only this test"),
-    checker: str = typer.Option("exact", "--checker", "-c", help="Checker name (exact, tokens, fcmp)"),
+    checker: str = typer.Option("wcmp", "--checker", "-c", help="Checker name (wcmp, ncmp, lcmp, fcmp, rcmp4/6/9, yesno, nyesno, custom)"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output for failures"),
 ) -> None:
     """Judge all solutions on all tests."""
     require_user()
-    init_db()
-    conn = get_connection()
-    try:
+
+    with db_transaction() as conn:
         problem = Problem.find_by_slug(conn, slug)
         if problem is None:
             console.print(f"[red]Problem '{slug}' not found[/red]")
@@ -57,21 +58,19 @@ def run(
             if not tests:
                 console.print(f"[red]Test #{test_index} not found[/red]")
                 raise typer.Exit(1)
-    finally:
-        conn.close()
 
-    if not solutions:
-        console.print("[red]No solutions to judge.[/red]")
-        return
-    if not tests:
-        console.print("[red]No tests to judge.[/red]")
-        return
+        if not solutions:
+            console.print("[red]No solutions to judge.[/red]")
+            return
+        if not tests:
+            console.print("[red]No tests to judge.[/red]")
+            return
 
-    console.print(f"[heading]Judging '{slug}'[/heading]")
-    console.print(f"  Solutions: {len(solutions)}  Tests: {len(tests)}  Checker: {checker}")
-    console.print()
+        console.print(f"[heading]Judging '{slug}'[/heading]")
+        console.print(f"  Solutions: {len(solutions)}  Tests: {len(tests)}  Checker: {checker}")
+        console.print()
 
-    summary = judge_all(problem, solutions, tests, checker_name=checker)
+        summary = judge_all(conn, problem, solutions, tests, checker_name=checker)
 
     # Compile errors
     for sol_name, err in summary.compile_errors.items():
@@ -112,7 +111,7 @@ def run(
     by_sol = summary.by_solution
     for sol in solutions:
         results = by_sol.get(sol.name, [])
-        counts = {"AC": 0, "WA": 0, "TLE": 0, "RTE": 0, "MLE": 0, "CE": 0}
+        counts = {"AC": 0, "WA": 0, "TLE": 0, "RTE": 0, "MLE": 0, "CE": 0, "PE": 0, "FAIL": 0}
         for r in results:
             counts[r.verdict] = counts.get(r.verdict, 0) + 1
         agg_table.add_row(
@@ -155,9 +154,7 @@ def history(
     limit: int = typer.Option(20, "--limit", "-n", help="Number of results to show"),
 ) -> None:
     """Show recent judging history."""
-    init_db()
-    conn = get_connection()
-    try:
+    with db_transaction() as conn:
         problem = Problem.find_by_slug(conn, slug)
         if problem is None:
             console.print(f"[red]Problem '{slug}' not found[/red]")
@@ -199,5 +196,3 @@ def history(
             )
 
         console.print(table)
-    finally:
-        conn.close()

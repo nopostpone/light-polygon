@@ -2,19 +2,13 @@
 
 [中文版本](docs/README.zh.md)
 
+> **🚧 Work in Progress — This project is NOT yet ready for production use.**
+> 
+> The architecture is currently undergoing a major refactor. APIs, directory structures, and commands may change significantly. Use at your own risk.
+
 A lightweight CLI tool for algorithm competition problem preparation, inspired by [Codeforces Polygon](https://polygon.codeforces.com/).
 
 Fully offline, all data stored locally. Designed for individual problem setters and small teams.
-
-> **Note: This project is not yet published to PyPI. Install from source for now.**
-
-## Installation
-
-```bash
-git clone https://github.com/nopostpone/light-polygon.git
-cd light-polygon
-pip install -e .
-```
 
 ## Quick Start
 

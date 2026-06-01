@@ -2,19 +2,13 @@
 
 [English](../README.md)
 
+> **🚧 开发中 — 本项目尚未完成，暂不适合生产环境使用。**
+> 
+> 当前架构正在进行大规模重构，API、目录结构、命令等可能会发生重大变化。请谨慎使用。
+
 一个轻量级的算法竞赛出题工具，灵感来自 [Codeforces Polygon](https://polygon.codeforces.com/)。
 
 完全离线，所有数据存储在本地。适合个人出题人或小团队使用。
-
-> **注意：本项目尚未发布到 PyPI，目前只能从源码安装。**
-
-## 安装
-
-```bash
-git clone https://github.com/nopostpone/light-polygon.git
-cd light-polygon
-pip install -e .
-```
 
 ## 快速开始
 
