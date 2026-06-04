@@ -8,6 +8,7 @@ from light_polygon.db.connection import get_connection
 from light_polygon.db.models import Problem, Solution
 from light_polygon.judge.compiler import CompileResult, compile_source
 from light_polygon.judge.sandbox import SandboxResult, run_sandboxed
+from light_polygon.platform import normalize_exit_code
 from light_polygon.problem import layout
 from light_polygon.solution.manager import language_from_path
 from light_polygon.tests.manager import TestManager
@@ -30,6 +31,9 @@ def compile_generator(slug: str, gen_config: GeneratorConfig) -> CompileResult:
     source_path = layout.generators_dir(slug) / gen_config.source
     if not source_path.exists():
         return CompileResult(success=False, errors=f"Generator source not found: {source_path}")
+    # FOR_LINUX disables Windows-specific console/CRLF behavior in testlib.h,
+    # forcing POSIX-style LF-only input processing. This keeps behavior
+    # consistent across platforms (our sandbox already normalises \r\n → \n).
     return compile_source(
         source_path, "cpp",
         include_dirs=[str(get_testlib_include_dir())],
@@ -53,6 +57,7 @@ def compile_validator(slug: str) -> CompileResult | None:
     source_path = layout.files_dir(slug) / "validator.cpp"
     if not source_path.exists():
         return None
+    # See compile_generator for the rationale behind FOR_LINUX.
     return compile_source(
         source_path, "cpp",
         include_dirs=[str(get_testlib_include_dir())],
@@ -68,12 +73,10 @@ def validate_input(executable: Path, input_data: str) -> tuple[bool, str]:
         memory_limit_mb=VALIDATOR_MEMORY_LIMIT_MB,
         stdin_data=input_data,
     )
-    if result.exit_code == 0:
-        return True, ""
-    # testlib.h on Windows with MSYS2 g++ may crash on exit (0xC0000005)
-    # after producing correct validation result.
-    # Accept as pass if stderr is empty (no validation error message).
-    if result.exit_code == 0xC0000005 and not result.stderr.strip():
+    # normalize_exit_code handles known Windows MSYS2 testlib crashes
+    # (0xC0000005) that still produce correct output before crashing.
+    exit_code = normalize_exit_code(result.exit_code, result.stderr)
+    if exit_code == 0:
         return True, ""
     msg = result.stderr.strip() or f"Validator exited with code {result.exit_code}"
     return False, msg

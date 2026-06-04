@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import hashlib
 import subprocess
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+from light_polygon.config import get_config
 from light_polygon.platform import get_compiler_executable, is_windows, normalize_executable_path
 
 
@@ -20,6 +22,29 @@ if is_windows():
     # Static link libgcc/libstdc++ to avoid Windows MSYS2 runtime crashes
     # (known issue with testlib programs exiting with 0xC0000005)
     DEFAULT_FLAGS.extend(["-static-libgcc", "-static-libstdc++"])
+
+
+def _get_cache_dir() -> Path:
+    return get_config().data_dir / ".cache" / "compile"
+
+
+def _compute_cache_key(
+    source_path: Path,
+    language: str,
+    flags: list[str] | None,
+    include_dirs: list[str] | None,
+    defines: list[str] | None,
+) -> str:
+    hasher = hashlib.sha256()
+    hasher.update(source_path.read_bytes())
+    hasher.update(language.encode())
+    if flags:
+        hasher.update(",".join(flags).encode())
+    if include_dirs:
+        hasher.update(",".join(include_dirs).encode())
+    if defines:
+        hasher.update(",".join(defines).encode())
+    return hasher.hexdigest()
 
 
 def compile_source(
@@ -50,7 +75,19 @@ def compile_source(
     if language not in ("cpp", "c++", "c"):
         return CompileResult(success=True, executable_path=source_path)
 
-    if output_path is None:
+    use_cache = output_path is None
+
+    if use_cache:
+        cache_key = _compute_cache_key(
+            source_path, language, flags, include_dirs, defines,
+        )
+        cache_dir = _get_cache_dir() / cache_key
+        output_path = cache_dir / source_path.stem
+        cached = normalize_executable_path(output_path)
+        if cached.exists():
+            return CompileResult(success=True, executable_path=cached)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+    elif output_path is None:
         temp_dir = Path(tempfile.mkdtemp(prefix="lp_compile_"))
         output_path = temp_dir / source_path.stem
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import shutil
+
 import typer
 from rich.table import Table
 
@@ -13,6 +15,18 @@ from light_polygon.tests.toml_config import generate_template_toml, read_tests_t
 from light_polygon.utils.console import console
 
 test_app = typer.Typer(help="Test case management", no_args_is_help=True)
+
+
+def _require_gpp() -> None:
+    if not shutil.which("g++"):
+        console.print(
+            "[red]g++ not found on PATH.[/red]\n"
+            "  Please install a C++ compiler:\n"
+            "    Ubuntu/Debian: sudo apt install g++\n"
+            "    macOS:         xcode-select --install\n"
+            "    Windows:       Install MSYS2 or MinGW-w64"
+        )
+        raise typer.Exit(1)
 
 
 @test_app.command()
@@ -193,6 +207,7 @@ def generate(
 ) -> None:
     """Generate tests from tests.toml configuration."""
     require_user()
+    _require_gpp()
     init_db()
     conn = get_connection()
     try:

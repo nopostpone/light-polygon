@@ -26,6 +26,12 @@ def get_connection() -> sqlite3.Connection:
 def init_db() -> None:
     conn = get_connection()
     try:
+        # Fast path: skip if schema_version table already exists
+        cur = conn.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'"
+        )
+        if cur.fetchone() is not None:
+            return
         schema = SCHEMA_SQL.read_text(encoding="utf-8")
         conn.executescript(schema)
         conn.commit()

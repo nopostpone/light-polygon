@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import tempfile
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -84,6 +85,7 @@ def judge_solution(
     solution: Solution,
     tests: list[TestCase],
     checker_name: str = "wcmp",
+    on_test_judged: Callable | None = None,
 ) -> list[JudgeResult]:
     """Judge a single solution against all tests.
 
@@ -93,6 +95,7 @@ def judge_solution(
         solution: The solution to judge.
         tests: List of test cases to run against.
         checker_name: Checker identifier (e.g. 'wcmp', 'ncmp', 'custom').
+        on_test_judged: Optional callback invoked after each test is judged.
 
     Returns:
         List of JudgeResult, one per test case.
@@ -184,6 +187,8 @@ def judge_solution(
             error=error,
             invocation=invocation,
         ))
+        if on_test_judged is not None:
+            on_test_judged()
 
     return results
 
@@ -194,6 +199,7 @@ def judge_all(
     solutions: list[Solution] | None = None,
     tests: list[TestCase] | None = None,
     checker_name: str = "wcmp",
+    on_test_judged: Callable | None = None,
 ) -> JudgeSummary:
     """Judge all solutions against all tests.
 
@@ -203,6 +209,7 @@ def judge_all(
         solutions: Solutions to judge (defaults to all problem solutions).
         tests: Test cases to use (defaults to 'tests' testset).
         checker_name: Checker identifier.
+        on_test_judged: Optional callback invoked after each test is judged.
 
     Returns:
         JudgeSummary with all results grouped by solution.
@@ -218,7 +225,10 @@ def judge_all(
         return summary
 
     for sol in solutions:
-        results = judge_solution(conn, problem, sol, tests, checker_name)
+        results = judge_solution(
+            conn, problem, sol, tests, checker_name,
+            on_test_judged=on_test_judged,
+        )
         summary.results.extend(results)
         # Detect compile errors (all CE)
         if results and all(r.verdict == "CE" for r in results):

@@ -35,27 +35,30 @@ def _math_display(state: StateBlock, start_line: int, end_line: int, silent: boo
         return False
 
     # Find closing $$
-    for i in range(start_line, end_line):
+    end_line_idx = -1
+    for i in range(start_line + 1, end_line):
         blk = state.src[state.bMarks[i]:state.eMarks[i]]
-        if blk.rstrip().endswith("$$") and i > start_line:
+        if blk.rstrip().endswith("$$"):
+            end_line_idx = i
             break
     else:
         # Single-line: $$ ... $$
         if not line.rstrip().endswith("$$") or len(line.strip()) <= 4:
             return False
+        end_line_idx = start_line
 
     if not silent:
         # Collect content between $$ and $$
-        if start_line == i if 'i' in dir() else True:
+        if end_line_idx == start_line:
             # Single line
             content = line.strip()[2:-2].strip()
         else:
             content_lines = []
-            for j in range(start_line, i + 1):
+            for j in range(start_line, end_line_idx + 1):
                 l = state.src[state.bMarks[j]:state.eMarks[j]].rstrip()
                 if j == start_line:
                     l = l[2:] if l.startswith("$$") else l
-                if j == i:
+                if j == end_line_idx:
                     l = l[:-2] if l.rstrip().endswith("$$") else l
                 content_lines.append(l)
             content = "\n".join(content_lines)
@@ -63,10 +66,7 @@ def _math_display(state: StateBlock, start_line: int, end_line: int, silent: boo
         token = state.push("math_display", "", 0)
         token.content = content
 
-    if 'i' in dir():
-        state.line = i + 1
-    else:
-        state.line = start_line + 1
+    state.line = end_line_idx + 1
     return True
 
 

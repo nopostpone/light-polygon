@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import shutil
+
 import typer
 from rich.panel import Panel
+from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
 from rich.table import Table
 
 from light_polygon.auth.commands import require_user
@@ -28,6 +31,18 @@ def _format_verdict(v: str) -> str:
     return VERDICT_STYLES.get(v, v)
 
 
+def _require_gpp() -> None:
+    if not shutil.which("g++"):
+        console.print(
+            "[red]g++ not found on PATH.[/red]\n"
+            "  Please install a C++ compiler:\n"
+            "    Ubuntu/Debian: sudo apt install g++\n"
+            "    macOS:         xcode-select --install\n"
+            "    Windows:       Install MSYS2 or MinGW-w64"
+        )
+        raise typer.Exit(1)
+
+
 @judge_app.command()
 def run(
     slug: str = typer.Argument(..., help="Problem slug"),
@@ -38,6 +53,7 @@ def run(
 ) -> None:
     """Judge all solutions on all tests."""
     require_user()
+    _require_gpp()
 
     with db_transaction() as conn:
         problem = Problem.find_by_slug(conn, slug)
@@ -70,7 +86,23 @@ def run(
         console.print(f"  Solutions: {len(solutions)}  Tests: {len(tests)}  Checker: {checker}")
         console.print()
 
-        summary = judge_all(conn, problem, solutions, tests, checker_name=checker)
+        total_tests = len(solutions) * len(tests)
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            TaskProgressColumn(),
+            console=console,
+        ) as progress:
+            task = progress.add_task("Judging...", total=total_tests)
+
+            def _advance():
+                progress.advance(task)
+
+            summary = judge_all(
+                conn, problem, solutions, tests,
+                checker_name=checker, on_test_judged=_advance,
+            )
 
     # Compile errors
     for sol_name, err in summary.compile_errors.items():
