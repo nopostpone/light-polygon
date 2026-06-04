@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 # ─── Row-to-dict helpers ───────────────────────────────────────────
 
+
 def _row_to_dict(row: sqlite3.Row | None) -> dict | None:
     if row is None:
         return None
@@ -17,6 +18,7 @@ def _rows_to_dicts(rows: list[sqlite3.Row]) -> list[dict]:
 
 
 # ─── User ──────────────────────────────────────────────────────────
+
 
 @dataclass
 class User:
@@ -37,18 +39,28 @@ class User:
         )
 
     @classmethod
-    def create(cls, conn: sqlite3.Connection, username: str, password_hash: str,
-               display_name: str = "", role: str = "author") -> User:
+    def create(
+        cls,
+        conn: sqlite3.Connection,
+        username: str,
+        password_hash: str,
+        display_name: str = "",
+        role: str = "author",
+    ) -> User:
         conn.execute(
             "INSERT INTO users (username, password_hash, display_name, role) VALUES (?, ?, ?, ?)",
             (username, password_hash, display_name, role),
         )
-        row = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM users WHERE username = ?", (username,)
+        ).fetchone()
         return cls.from_row(dict(row))
 
     @classmethod
     def find_by_username(cls, conn: sqlite3.Connection, username: str) -> User | None:
-        row = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM users WHERE username = ?", (username,)
+        ).fetchone()
         if row is None:
             return None
         return cls.from_row(dict(row))
@@ -67,6 +79,7 @@ class User:
 
 
 # ─── Problem ───────────────────────────────────────────────────────
+
 
 @dataclass
 class Problem:
@@ -95,14 +108,30 @@ class Problem:
         )
 
     @classmethod
-    def create(cls, conn: sqlite3.Connection, slug: str, title: str, owner_id: int,
-               time_limit_ms: int = 1000, memory_limit_mb: int = 256,
-               input_file: str = "stdin", output_file: str = "stdout") -> Problem:
+    def create(
+        cls,
+        conn: sqlite3.Connection,
+        slug: str,
+        title: str,
+        owner_id: int,
+        time_limit_ms: int = 1000,
+        memory_limit_mb: int = 256,
+        input_file: str = "stdin",
+        output_file: str = "stdout",
+    ) -> Problem:
         conn.execute(
             """INSERT INTO problems (slug, title, time_limit_ms, memory_limit_mb,
                input_file, output_file, owner_id)
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (slug, title, time_limit_ms, memory_limit_mb, input_file, output_file, owner_id),
+            (
+                slug,
+                title,
+                time_limit_ms,
+                memory_limit_mb,
+                input_file,
+                output_file,
+                owner_id,
+            ),
         )
         row = conn.execute("SELECT * FROM problems WHERE slug = ?", (slug,)).fetchone()
         return cls.from_row(dict(row))
@@ -116,13 +145,17 @@ class Problem:
 
     @classmethod
     def find_by_id(cls, conn: sqlite3.Connection, problem_id: int) -> Problem | None:
-        row = conn.execute("SELECT * FROM problems WHERE id = ?", (problem_id,)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM problems WHERE id = ?", (problem_id,)
+        ).fetchone()
         if row is None:
             return None
         return cls.from_row(dict(row))
 
     @classmethod
-    def list_all(cls, conn: sqlite3.Connection, owner_id: int | None = None) -> list[Problem]:
+    def list_all(
+        cls, conn: sqlite3.Connection, owner_id: int | None = None
+    ) -> list[Problem]:
         if owner_id is not None:
             rows = conn.execute(
                 "SELECT * FROM problems WHERE owner_id = ? ORDER BY created_at DESC",
@@ -139,8 +172,15 @@ class Problem:
             """UPDATE problems SET title=?, time_limit_ms=?, memory_limit_mb=?,
                input_file=?, output_file=?, is_private=?, updated_at=datetime('now')
                WHERE id=?""",
-            (self.title, self.time_limit_ms, self.memory_limit_mb,
-             self.input_file, self.output_file, int(self.is_private), self.id),
+            (
+                self.title,
+                self.time_limit_ms,
+                self.memory_limit_mb,
+                self.input_file,
+                self.output_file,
+                int(self.is_private),
+                self.id,
+            ),
         )
 
     def delete(self, conn: sqlite3.Connection) -> None:
@@ -148,6 +188,7 @@ class Problem:
 
 
 # ─── Solution ──────────────────────────────────────────────────────
+
 
 @dataclass
 class Solution:
@@ -172,9 +213,16 @@ class Solution:
         )
 
     @classmethod
-    def create(cls, conn: sqlite3.Connection, problem_id: int, name: str,
-               language: str, source_path: str, tag: str = "AC",
-               description: str = "") -> Solution:
+    def create(
+        cls,
+        conn: sqlite3.Connection,
+        problem_id: int,
+        name: str,
+        language: str,
+        source_path: str,
+        tag: str = "AC",
+        description: str = "",
+    ) -> Solution:
         conn.execute(
             """INSERT INTO solutions (problem_id, name, language, source_path, tag, description)
                VALUES (?, ?, ?, ?, ?, ?)""",
@@ -187,7 +235,9 @@ class Solution:
         return cls.from_row(dict(row))
 
     @classmethod
-    def find_by_problem(cls, conn: sqlite3.Connection, problem_id: int) -> list[Solution]:
+    def find_by_problem(
+        cls, conn: sqlite3.Connection, problem_id: int
+    ) -> list[Solution]:
         rows = conn.execute(
             "SELECT * FROM solutions WHERE problem_id = ? ORDER BY name",
             (problem_id,),
@@ -196,7 +246,9 @@ class Solution:
 
     @classmethod
     def find_by_id(cls, conn: sqlite3.Connection, solution_id: int) -> Solution | None:
-        row = conn.execute("SELECT * FROM solutions WHERE id = ?", (solution_id,)).fetchone()
+        row = conn.execute(
+            "SELECT * FROM solutions WHERE id = ?", (solution_id,)
+        ).fetchone()
         if row is None:
             return None
         return cls.from_row(dict(row))
@@ -212,6 +264,7 @@ class Solution:
 
 
 # ─── Test (test case) ──────────────────────────────────────────────
+
 
 @dataclass
 class TestCase:
@@ -240,9 +293,16 @@ class TestCase:
         )
 
     @classmethod
-    def create(cls, conn: sqlite3.Connection, problem_id: int, test_index: int,
-               testset: str = "tests", description: str = "",
-               generator: str = "", is_sample: bool = False) -> TestCase:
+    def create(
+        cls,
+        conn: sqlite3.Connection,
+        problem_id: int,
+        test_index: int,
+        testset: str = "tests",
+        description: str = "",
+        generator: str = "",
+        is_sample: bool = False,
+    ) -> TestCase:
         conn.execute(
             """INSERT INTO tests (problem_id, test_index, testset, description, generator, is_sample)
                VALUES (?, ?, ?, ?, ?, ?)""",
@@ -255,8 +315,9 @@ class TestCase:
         return cls.from_row(dict(row))
 
     @classmethod
-    def find_by_problem(cls, conn: sqlite3.Connection, problem_id: int,
-                        testset: str | None = None) -> list[TestCase]:
+    def find_by_problem(
+        cls, conn: sqlite3.Connection, problem_id: int, testset: str | None = None
+    ) -> list[TestCase]:
         if testset:
             rows = conn.execute(
                 "SELECT * FROM tests WHERE problem_id = ? AND testset = ? ORDER BY test_index",
@@ -280,8 +341,14 @@ class TestCase:
         conn.execute(
             "UPDATE tests SET testset=?, description=?, generator=?, "
             "is_sample=?, verified=? WHERE id=?",
-            (self.testset, self.description, self.generator,
-             int(self.is_sample), int(self.verified), self.id),
+            (
+                self.testset,
+                self.description,
+                self.generator,
+                int(self.is_sample),
+                int(self.verified),
+                self.id,
+            ),
         )
 
     def delete(self, conn: sqlite3.Connection) -> None:
@@ -289,6 +356,7 @@ class TestCase:
 
 
 # ─── Invocation ────────────────────────────────────────────────────
+
 
 @dataclass
 class Invocation:
@@ -306,17 +374,38 @@ class Invocation:
     error_text: str = ""
 
     @classmethod
-    def create(cls, conn: sqlite3.Connection, problem_id: int, solution_id: int,
-               test_id: int, verdict: str, score: float = 0.0,
-               cpu_time_ms: int | None = None, wall_time_ms: int | None = None,
-               memory_kb: int | None = None, exit_code: int | None = None,
-               output_hash: str = "", error_text: str = "") -> Invocation:
+    def create(
+        cls,
+        conn: sqlite3.Connection,
+        problem_id: int,
+        solution_id: int,
+        test_id: int,
+        verdict: str,
+        score: float = 0.0,
+        cpu_time_ms: int | None = None,
+        wall_time_ms: int | None = None,
+        memory_kb: int | None = None,
+        exit_code: int | None = None,
+        output_hash: str = "",
+        error_text: str = "",
+    ) -> Invocation:
         conn.execute(
             """INSERT INTO invocations (problem_id, solution_id, test_id, verdict, score,
                cpu_time_ms, wall_time_ms, memory_kb, exit_code, output_hash, error_text)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-            (problem_id, solution_id, test_id, verdict, score,
-             cpu_time_ms, wall_time_ms, memory_kb, exit_code, output_hash, error_text),
+            (
+                problem_id,
+                solution_id,
+                test_id,
+                verdict,
+                score,
+                cpu_time_ms,
+                wall_time_ms,
+                memory_kb,
+                exit_code,
+                output_hash,
+                error_text,
+            ),
         )
         row = conn.execute(
             "SELECT * FROM invocations WHERE id = last_insert_rowid()"
@@ -341,7 +430,9 @@ class Invocation:
         )
 
     @classmethod
-    def find_by_solution(cls, conn: sqlite3.Connection, solution_id: int) -> list[Invocation]:
+    def find_by_solution(
+        cls, conn: sqlite3.Connection, solution_id: int
+    ) -> list[Invocation]:
         rows = conn.execute(
             "SELECT * FROM invocations WHERE solution_id = ? ORDER BY test_id",
             (solution_id,),

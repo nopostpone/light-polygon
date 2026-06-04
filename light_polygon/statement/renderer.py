@@ -10,33 +10,36 @@ from markdown_it.rules_inline import StateInline
 
 # ─── Markdown → HTML with MathJax ──────────────────────────────────
 
+
 def _math_inline(state: StateInline, silent: bool) -> bool:
     """Parse inline $...$ math."""
     if state.src[state.pos] != "$":
         return False
     # Check not $$ (display math)
-    if state.src[state.pos:state.pos + 2] == "$$":
+    if state.src[state.pos : state.pos + 2] == "$$":
         return False
     end = state.src.find("$", state.pos + 1)
     if end == -1:
         return False
     if not silent:
         token = state.push("math_inline", "", 0)
-        token.content = state.src[state.pos + 1:end]
+        token.content = state.src[state.pos + 1 : end]
     state.pos = end + 1
     return True
 
 
-def _math_display(state: StateBlock, start_line: int, end_line: int, silent: bool) -> bool:
+def _math_display(
+    state: StateBlock, start_line: int, end_line: int, silent: bool
+) -> bool:
     """Parse display $$...$$ math."""
-    line = state.src[state.bMarks[start_line]:state.eMarks[start_line]]
+    line = state.src[state.bMarks[start_line] : state.eMarks[start_line]]
     if not line.startswith("$$"):
         return False
 
     # Find closing $$
     end_line_idx = -1
     for i in range(start_line + 1, end_line):
-        blk = state.src[state.bMarks[i]:state.eMarks[i]]
+        blk = state.src[state.bMarks[i] : state.eMarks[i]]
         if blk.rstrip().endswith("$$"):
             end_line_idx = i
             break
@@ -54,11 +57,17 @@ def _math_display(state: StateBlock, start_line: int, end_line: int, silent: boo
         else:
             content_lines = []
             for j in range(start_line, end_line_idx + 1):
-                line_text = state.src[state.bMarks[j]:state.eMarks[j]].rstrip()
+                line_text = state.src[state.bMarks[j] : state.eMarks[j]].rstrip()
                 if j == start_line:
-                    line_text = line_text[2:] if line_text.startswith("$$") else line_text
+                    line_text = (
+                        line_text[2:] if line_text.startswith("$$") else line_text
+                    )
                 if j == end_line_idx:
-                    line_text = line_text[:-2] if line_text.rstrip().endswith("$$") else line_text
+                    line_text = (
+                        line_text[:-2]
+                        if line_text.rstrip().endswith("$$")
+                        else line_text
+                    )
                 content_lines.append(line_text)
             content = "\n".join(content_lines)
 
@@ -170,7 +179,9 @@ def render_latex(markdown_text: str) -> str:
 
         # Close list if needed (blank lines between items don't break the list)
         if in_list and line.strip():
-            is_list_item = line.strip().startswith("- ") or re.match(r"^\d+\.\s", line.strip())
+            is_list_item = line.strip().startswith("- ") or re.match(
+                r"^\d+\.\s", line.strip()
+            )
             if not is_list_item:
                 out.append(f"\\end{{{list_type}}}")
                 in_list = False
@@ -207,12 +218,16 @@ def render_latex(markdown_text: str) -> str:
             i += 1
             continue
         if line.startswith("## "):
-            out.append(f"\\subsection*{{{_convert_inline_formatting(line[3:].strip())}}}")
+            out.append(
+                f"\\subsection*{{{_convert_inline_formatting(line[3:].strip())}}}"
+            )
             prev_empty = False
             i += 1
             continue
         if line.startswith("### "):
-            out.append(f"\\subsubsection*{{{_convert_inline_formatting(line[4:].strip())}}}")
+            out.append(
+                f"\\subsubsection*{{{_convert_inline_formatting(line[4:].strip())}}}"
+            )
             prev_empty = False
             i += 1
             continue
@@ -271,6 +286,7 @@ def render_latex(markdown_text: str) -> str:
 
 
 # ─── Terminal preview ──────────────────────────────────────────────
+
 
 def _strip_math(markdown_text: str) -> str:
     """Strip $ and $$ delimiters, leaving LaTeX as plain text for terminal display."""

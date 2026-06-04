@@ -16,11 +16,21 @@ problem_app = typer.Typer(help="Problem management", no_args_is_help=True)
 @problem_app.command()
 def create(
     slug: str = typer.Argument(..., help="Problem slug (URL-safe short name)"),
-    title: str = typer.Option("", "--title", "-t", help="Problem title (auto-generated from slug if empty)"),
-    time_limit: int = typer.Option(1000, "--tl", "--time-limit", help="Time limit in milliseconds"),
-    memory_limit: int = typer.Option(256, "--ml", "--memory-limit", help="Memory limit in megabytes"),
-    input_file: str = typer.Option("stdin", "--input-file", help="Input file (stdin or filename)"),
-    output_file: str = typer.Option("stdout", "--output-file", help="Output file (stdout or filename)"),
+    title: str = typer.Option(
+        "", "--title", "-t", help="Problem title (auto-generated from slug if empty)"
+    ),
+    time_limit: int = typer.Option(
+        1000, "--tl", "--time-limit", help="Time limit in milliseconds"
+    ),
+    memory_limit: int = typer.Option(
+        256, "--ml", "--memory-limit", help="Memory limit in megabytes"
+    ),
+    input_file: str = typer.Option(
+        "stdin", "--input-file", help="Input file (stdin or filename)"
+    ),
+    output_file: str = typer.Option(
+        "stdout", "--output-file", help="Output file (stdout or filename)"
+    ),
     private: bool = typer.Option(True, "--private/--public", help="Problem visibility"),
 ) -> None:
     """Create a new problem."""
@@ -39,15 +49,20 @@ def create(
 
         mgr = ProblemManager(conn)
         problem = mgr.create(
-            slug=slug, title=title, owner_id=user.id,
-            time_limit_ms=time_limit, memory_limit_mb=memory_limit,
-            input_file=input_file, output_file=output_file,
+            slug=slug,
+            title=title,
+            owner_id=user.id,
+            time_limit_ms=time_limit,
+            memory_limit_mb=memory_limit,
+            input_file=input_file,
+            output_file=output_file,
             is_private=private,
         )
         conn.commit()
         console.print(f"[green]Problem '{problem.slug}' created.[/green]")
         console.print(f"  Directory: {get_connection.__module__}")
         from light_polygon.problem.layout import problem_dir
+
         console.print(f"  Directory: {problem_dir(problem.slug)}")
     except ProblemError as e:
         console.print(f"[red]{e}[/red]")
@@ -83,8 +98,11 @@ def list_problems(
         table.add_column("Private")
         for p in problems:
             table.add_row(
-                p.slug, p.title, str(p.time_limit_ms),
-                str(p.memory_limit_mb), "yes" if p.is_private else "no",
+                p.slug,
+                p.title,
+                str(p.time_limit_ms),
+                str(p.memory_limit_mb),
+                "yes" if p.is_private else "no",
             )
         console.print(table)
     finally:
@@ -183,7 +201,9 @@ def delete(
             raise typer.Exit(1)
 
         if not force:
-            confirm = typer.confirm(f"Delete problem '{slug}' and all its data? This cannot be undone.")
+            confirm = typer.confirm(
+                f"Delete problem '{slug}' and all its data? This cannot be undone."
+            )
             if not confirm:
                 console.print("[dim]Cancelled.[/dim]")
                 raise typer.Exit(0)

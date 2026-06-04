@@ -19,38 +19,72 @@ def _login(runner: CliRunner) -> None:
 
 
 def _create_problem(runner: CliRunner, slug: str, title: str = "Test") -> None:
-    result = runner.invoke(app, [
-        "problem", "create", slug, "--title", title, "--tl", "2000", "--ml", "512",
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "problem",
+            "create",
+            slug,
+            "--title",
+            title,
+            "--tl",
+            "2000",
+            "--ml",
+            "512",
+        ],
+    )
     assert result.exit_code == 0, f"Create failed: {result.output}"
 
 
-def _add_solution(runner: CliRunner, slug: str, code: str, name: str, tag: str = "AC") -> None:
+def _add_solution(
+    runner: CliRunner, slug: str, code: str, name: str, tag: str = "AC"
+) -> None:
     from light_polygon.problem import layout
+
     sol_dir = layout.solutions_dir(slug)
     sol_dir.mkdir(parents=True, exist_ok=True)
     sol_path = sol_dir / name
     sol_path.write_text(code, encoding="utf-8")
-    result = runner.invoke(app, [
-        "solution", "add", slug, str(sol_path), "--tag", tag, "--as", name,
-    ])
+    result = runner.invoke(
+        app,
+        [
+            "solution",
+            "add",
+            slug,
+            str(sol_path),
+            "--tag",
+            tag,
+            "--as",
+            name,
+        ],
+    )
     assert result.exit_code == 0, f"Solution add failed: {result.output}"
 
 
-def _add_test(runner: CliRunner, slug: str, idx: int, inp: str, ans: str,
-              is_sample: bool = False) -> None:
+def _add_test(
+    runner: CliRunner, slug: str, idx: int, inp: str, ans: str, is_sample: bool = False
+) -> None:
     from light_polygon.problem import layout
+
     td = layout.tests_dir(slug)
     td.mkdir(parents=True, exist_ok=True)
     in_path = td / f"{idx:02d}"
     ans_path = td / f"{idx:02d}.a"
     in_path.write_text(inp, encoding="utf-8")
     ans_path.write_text(ans, encoding="utf-8")
-    result = runner.invoke(app, [
-        "test", "add", slug,
-        "--input", str(in_path),
-        "--answer", str(ans_path),
-    ] + (["--sample"] if is_sample else []))
+    result = runner.invoke(
+        app,
+        [
+            "test",
+            "add",
+            slug,
+            "--input",
+            str(in_path),
+            "--answer",
+            str(ans_path),
+        ]
+        + (["--sample"] if is_sample else []),
+    )
     assert result.exit_code == 0, f"Test add failed: {result.output}"
 
 
@@ -59,11 +93,18 @@ class TestExportNative:
         _login(runner)
         _create_problem(runner, "empty-prob")
 
-        result = runner.invoke(app, [
-            "export", "package", "empty-prob",
-            "--output", str(temp_data_dir),
-            "--format", "native",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "empty-prob",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "native",
+            ],
+        )
         assert result.exit_code == 0, result.output
 
         zip_path = temp_data_dir / "empty-prob-native.zip"
@@ -83,6 +124,7 @@ class TestExportNative:
 
         # Add a generator source
         from light_polygon.problem import layout
+
         gen_dir = layout.generators_dir("full-prob")
         gen_dir.mkdir(parents=True, exist_ok=True)
         (gen_dir / "gen.cpp").write_text("// generator", encoding="utf-8")
@@ -92,13 +134,22 @@ class TestExportNative:
         (files_dir / "validator.cpp").write_text("// validator", encoding="utf-8")
 
         # Add tests.toml
-        (layout.problem_dir("full-prob") / "tests.toml").write_text("# config", encoding="utf-8")
+        (layout.problem_dir("full-prob") / "tests.toml").write_text(
+            "# config", encoding="utf-8"
+        )
 
-        result = runner.invoke(app, [
-            "export", "package", "full-prob",
-            "--output", str(temp_data_dir),
-            "--format", "native",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "full-prob",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "native",
+            ],
+        )
         assert result.exit_code == 0, result.output
 
         zip_path = temp_data_dir / "full-prob-native.zip"
@@ -127,14 +178,22 @@ class TestExportPolygon:
         _add_test(runner, "poly-prob", 2, "5 7", "12")
 
         from light_polygon.problem import layout
+
         files_dir = layout.files_dir("poly-prob")
         (files_dir / "validator.cpp").write_text("// validator", encoding="utf-8")
 
-        result = runner.invoke(app, [
-            "export", "package", "poly-prob",
-            "--output", str(temp_data_dir),
-            "--format", "polygon",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "poly-prob",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "polygon",
+            ],
+        )
         assert result.exit_code == 0, result.output
 
         zip_path = temp_data_dir / "poly-prob-polygon.zip"
@@ -160,11 +219,18 @@ class TestExportPolygon:
         _add_test(runner, "schema-prob", 1, "1", "2")
         _add_test(runner, "schema-prob", 2, "3", "4")
 
-        result = runner.invoke(app, [
-            "export", "package", "schema-prob",
-            "--output", str(temp_data_dir),
-            "--format", "polygon",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "schema-prob",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "polygon",
+            ],
+        )
         assert result.exit_code == 0
 
         zip_path = temp_data_dir / "schema-prob-polygon.zip"
@@ -188,12 +254,19 @@ class TestExportPolygon:
         _add_solution(runner, "all-sol", "print(1)", "ac.py", "AC")
         _add_solution(runner, "all-sol", "print(0)", "wa.py", "WA")
 
-        result = runner.invoke(app, [
-            "export", "package", "all-sol",
-            "--output", str(temp_data_dir),
-            "--format", "polygon",
-            "--all-solutions",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "all-sol",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "polygon",
+                "--all-solutions",
+            ],
+        )
         assert result.exit_code == 0
 
         zip_path = temp_data_dir / "all-sol-polygon.zip"
@@ -206,21 +279,34 @@ class TestExportPolygon:
 class TestExportErrors:
     def test_export_missing_problem_errors(self, temp_data_dir):
         _login(runner)
-        result = runner.invoke(app, [
-            "export", "package", "nonexistent",
-            "--output", str(temp_data_dir),
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "nonexistent",
+                "--output",
+                str(temp_data_dir),
+            ],
+        )
         assert result.exit_code == 1
         assert "not found" in result.output.lower()
 
     def test_export_unknown_format_errors(self, temp_data_dir):
         _login(runner)
         _create_problem(runner, "fmt-err")
-        result = runner.invoke(app, [
-            "export", "package", "fmt-err",
-            "--output", str(temp_data_dir),
-            "--format", "invalid",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "fmt-err",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "invalid",
+            ],
+        )
         assert result.exit_code == 1
         assert "unknown format" in result.output.lower()
 
@@ -231,29 +317,45 @@ class TestExportOutput:
         _create_problem(runner, "cust-out")
         custom = temp_data_dir / "my-problem.zip"
 
-        result = runner.invoke(app, [
-            "export", "package", "cust-out",
-            "--output", str(custom),
-            "--format", "native",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "cust-out",
+                "--output",
+                str(custom),
+                "--format",
+                "native",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert custom.exists()
 
     def test_export_default_output_name(self, temp_data_dir):
         import os
+
         _login(runner)
         _create_problem(runner, "def-out")
 
         cwd = os.getcwd()
         try:
             os.chdir(str(temp_data_dir))
-            result = runner.invoke(app, [
-                "export", "package", "def-out",
-                "--format", "native",
-            ])
+            result = runner.invoke(
+                app,
+                [
+                    "export",
+                    "package",
+                    "def-out",
+                    "--format",
+                    "native",
+                ],
+            )
             assert result.exit_code == 0, result.output
             expected = temp_data_dir / "def-out-native.zip"
-            assert expected.exists(), f"Expected {expected}, got: {list(temp_data_dir.iterdir())}"
+            assert expected.exists(), (
+                f"Expected {expected}, got: {list(temp_data_dir.iterdir())}"
+            )
         finally:
             os.chdir(cwd)
 
@@ -265,15 +367,23 @@ class TestExportEdgeCases:
 
         # Delete statement.md
         from light_polygon.problem import layout
+
         st = layout.statement_path("no-stmt")
         st.unlink()
         assert not st.exists()
 
-        result = runner.invoke(app, [
-            "export", "package", "no-stmt",
-            "--output", str(temp_data_dir),
-            "--format", "native",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "no-stmt",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "native",
+            ],
+        )
         assert result.exit_code == 0, result.output
         assert "Warning" in result.output
 
@@ -287,14 +397,23 @@ class TestExportEdgeCases:
         _login(runner)
         _create_problem(runner, "no-files")
 
-        result = runner.invoke(app, [
-            "export", "package", "no-files",
-            "--output", str(temp_data_dir),
-            "--format", "polygon",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "export",
+                "package",
+                "no-files",
+                "--output",
+                str(temp_data_dir),
+                "--format",
+                "polygon",
+            ],
+        )
         assert result.exit_code == 0
 
         zip_path = temp_data_dir / "no-files-polygon.zip"
         with zipfile.ZipFile(zip_path) as zf:
             dir_entries = [n for n in zf.namelist() if n.startswith("no-files/files/")]
-            assert len(dir_entries) == 0, f"Empty files/ should not appear: {dir_entries}"
+            assert len(dir_entries) == 0, (
+                f"Empty files/ should not appear: {dir_entries}"
+            )

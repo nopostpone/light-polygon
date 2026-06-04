@@ -36,7 +36,9 @@ def _open_editor(filepath: Path) -> None:
                 return
             except (FileNotFoundError, subprocess.CalledProcessError):
                 continue
-        console.print("[yellow]No editor found. Set $EDITOR or edit the file manually:[/yellow]")
+        console.print(
+            "[yellow]No editor found. Set $EDITOR or edit the file manually:[/yellow]"
+        )
         console.print(f"  {filepath}")
 
 
@@ -77,7 +79,9 @@ def edit(
 @statement_app.command()
 def preview(
     slug: str = typer.Argument(..., help="Problem slug"),
-    raw: bool = typer.Option(False, "--raw", "-r", help="Show raw markdown without terminal rendering"),
+    raw: bool = typer.Option(
+        False, "--raw", "-r", help="Show raw markdown without terminal rendering"
+    ),
 ) -> None:
     """Preview the problem statement in the terminal."""
     init_db()
@@ -92,7 +96,9 @@ def preview(
 
     st_path = layout.statement_path(slug)
     if not st_path.exists():
-        console.print("[yellow]No statement file found. Run 'lp statement edit' first.[/yellow]")
+        console.print(
+            "[yellow]No statement file found. Run 'lp statement edit' first.[/yellow]"
+        )
         raise typer.Exit(1)
 
     md_text = st_path.read_text(encoding="utf-8")
@@ -102,6 +108,7 @@ def preview(
     else:
         rendered = render_terminal(md_text)
         from rich.markdown import Markdown
+
         md = Markdown(rendered)
         console.print(md)
 
@@ -110,7 +117,9 @@ def preview(
 def export(
     slug: str = typer.Argument(..., help="Problem slug"),
     fmt: str = typer.Option("html", "--format", "-f", help="Output format: html, tex"),
-    output: str = typer.Option("", "--output", "-o", help="Output file path (auto-generated if omitted)"),
+    output: str = typer.Option(
+        "", "--output", "-o", help="Output file path (auto-generated if omitted)"
+    ),
 ) -> None:
     """Export the problem statement to HTML or LaTeX."""
     init_db()
@@ -125,7 +134,9 @@ def export(
 
     st_path = layout.statement_path(slug)
     if not st_path.exists():
-        console.print("[yellow]No statement file found. Run 'lp statement edit' first.[/yellow]")
+        console.print(
+            "[yellow]No statement file found. Run 'lp statement edit' first.[/yellow]"
+        )
         raise typer.Exit(1)
 
     md_text = st_path.read_text(encoding="utf-8")

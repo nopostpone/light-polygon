@@ -20,13 +20,17 @@ VALID_TAGS = ["AC", "WA", "TLE", "MLE", "RTE", "CE", "RJ", "MANUAL"]
 def add(
     slug: str = typer.Argument(..., help="Problem slug"),
     file: str = typer.Argument(..., help="Path to solution source file"),
-    tag: str = typer.Option("AC", "--tag", "-t", help="Expected verdict (AC, WA, TLE, MLE, RTE)"),
+    tag: str = typer.Option(
+        "AC", "--tag", "-t", help="Expected verdict (AC, WA, TLE, MLE, RTE)"
+    ),
     name: str = typer.Option("", "--as", help="Custom name for the solution"),
 ) -> None:
     """Add a solution to a problem."""
     require_user()
     if tag not in VALID_TAGS:
-        console.print(f"[red]Invalid tag '{tag}'. Valid tags: {', '.join(VALID_TAGS)}[/red]")
+        console.print(
+            f"[red]Invalid tag '{tag}'. Valid tags: {', '.join(VALID_TAGS)}[/red]"
+        )
         raise typer.Exit(1)
 
     source_path = Path(file)
@@ -49,11 +53,17 @@ def add(
         rel_path = f"solutions/{sol_name}"
 
         Solution.create(
-            conn, problem_id=problem.id, name=sol_name,
-            language=lang, source_path=rel_path, tag=tag,
+            conn,
+            problem_id=problem.id,
+            name=sol_name,
+            language=lang,
+            source_path=rel_path,
+            tag=tag,
         )
         conn.commit()
-        console.print(f"[green]Solution '{sol_name}' ({lang}, {tag}) added to '{slug}'.[/green]")
+        console.print(
+            f"[green]Solution '{sol_name}' ({lang}, {tag}) added to '{slug}'.[/green]"
+        )
     finally:
         conn.close()
 
@@ -82,10 +92,16 @@ def list_solutions(
         table.add_column("Tag")
         for s in solutions:
             verdict_style = {
-                "AC": "verdict.ac", "WA": "verdict.wa", "TLE": "verdict.tle",
-                "MLE": "verdict.mle", "RTE": "verdict.rte", "CE": "verdict.ce",
+                "AC": "verdict.ac",
+                "WA": "verdict.wa",
+                "TLE": "verdict.tle",
+                "MLE": "verdict.mle",
+                "RTE": "verdict.rte",
+                "CE": "verdict.ce",
             }.get(s.tag, "")
-            table.add_row(s.name, s.language, f"[{verdict_style}]{s.tag}[/{verdict_style}]")
+            table.add_row(
+                s.name, s.language, f"[{verdict_style}]{s.tag}[/{verdict_style}]"
+            )
         console.print(table)
     finally:
         conn.close()
@@ -123,11 +139,15 @@ def delete(
 def tag(
     slug: str = typer.Argument(..., help="Problem slug"),
     name: str = typer.Argument(..., help="Solution name"),
-    new_tag: str = typer.Argument(..., help="New tag (AC, WA, TLE, MLE, RTE, CE, MANUAL)"),
+    new_tag: str = typer.Argument(
+        ..., help="New tag (AC, WA, TLE, MLE, RTE, CE, MANUAL)"
+    ),
 ) -> None:
     """Change the expected verdict tag of a solution."""
     if new_tag not in VALID_TAGS:
-        console.print(f"[red]Invalid tag '{new_tag}'. Valid tags: {', '.join(VALID_TAGS)}[/red]")
+        console.print(
+            f"[red]Invalid tag '{new_tag}'. Valid tags: {', '.join(VALID_TAGS)}[/red]"
+        )
         raise typer.Exit(1)
 
     init_db()

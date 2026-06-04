@@ -8,6 +8,7 @@ import pytest
 
 def _clear_config_cache() -> None:
     import light_polygon.config as cfg_mod
+
     cfg_mod._config = None
 
 
@@ -27,6 +28,7 @@ def temp_data_dir(monkeypatch):
 def db(temp_data_dir):
     """Initialize database and return connection."""
     from light_polygon.db.connection import init_db, get_connection
+
     init_db()
     conn = get_connection()
     yield conn
@@ -38,12 +40,15 @@ def logged_in_user(db):
     """Create and log in a test user."""
     from light_polygon.db.models import User
     import bcrypt
+
     user = User.create(
-        db, "testuser",
+        db,
+        "testuser",
         bcrypt.hashpw(b"testpass", bcrypt.gensalt()).decode(),
         display_name="Test User",
     )
     from light_polygon.auth.session import save_session
+
     save_session("testuser")
     return user
 
@@ -52,6 +57,7 @@ def logged_in_user(db):
 def sample_problem(db, logged_in_user):
     """Create a sample problem for testing."""
     from light_polygon.problem.manager import ProblemManager
+
     mgr = ProblemManager(db)
     return mgr.create(
         slug="a-plus-b",

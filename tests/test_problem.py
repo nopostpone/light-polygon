@@ -73,6 +73,7 @@ def test_problem_directory_created(db, logged_in_user, temp_data_dir):
     mgr = ProblemManager(db)
     mgr.create("dir-test", "Directory Test", logged_in_user.id)
     from light_polygon.problem import layout
+
     d = layout.problem_dir("dir-test")
     assert d.exists()
     assert (d / "statement.md").exists()

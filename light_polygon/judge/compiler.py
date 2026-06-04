@@ -7,7 +7,11 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from light_polygon.config import get_config
-from light_polygon.platform import get_compiler_executable, is_windows, normalize_executable_path
+from light_polygon.platform import (
+    get_compiler_executable,
+    is_windows,
+    normalize_executable_path,
+)
 
 
 @dataclass
@@ -69,7 +73,9 @@ def compile_source(
         CompileResult with the path to the compiled executable.
     """
     if not source_path.exists():
-        return CompileResult(success=False, errors=f"Source file not found: {source_path}")
+        return CompileResult(
+            success=False, errors=f"Source file not found: {source_path}"
+        )
 
     # If it's an interpreted language or already compiled
     if language not in ("cpp", "c++", "c"):
@@ -79,7 +85,11 @@ def compile_source(
 
     if use_cache:
         cache_key = _compute_cache_key(
-            source_path, language, flags, include_dirs, defines,
+            source_path,
+            language,
+            flags,
+            include_dirs,
+            defines,
         )
         cache_dir = _get_cache_dir() / cache_key
         output_path = cache_dir / source_path.stem

@@ -28,11 +28,17 @@ def test_judge_python_solution(sample_problem, db):
     # Add a Python solution
     sol_path = layout.solutions_dir(slug) / "solve.py"
     sol_path.parent.mkdir(parents=True, exist_ok=True)
-    sol_path.write_text("import sys\na, b = map(int, sys.stdin.read().split())\nprint(a + b)\n")
+    sol_path.write_text(
+        "import sys\na, b = map(int, sys.stdin.read().split())\nprint(a + b)\n"
+    )
 
     Solution.create(
-        db, problem_id=sample_problem.id, name="solve.py",
-        language="python", source_path="solutions/solve.py", tag="AC",
+        db,
+        problem_id=sample_problem.id,
+        name="solve.py",
+        language="python",
+        source_path="solutions/solve.py",
+        tag="AC",
     )
 
     # Judge using new service API
@@ -54,11 +60,17 @@ def test_judge_wrong_solution(sample_problem, db):
     # Add a wrong Python solution
     sol_path = layout.solutions_dir(slug) / "wrong.py"
     sol_path.parent.mkdir(parents=True, exist_ok=True)
-    sol_path.write_text("import sys\na, b = map(int, sys.stdin.read().split())\nprint(a * b)\n")
+    sol_path.write_text(
+        "import sys\na, b = map(int, sys.stdin.read().split())\nprint(a * b)\n"
+    )
 
     Solution.create(
-        db, problem_id=sample_problem.id, name="wrong.py",
-        language="python", source_path="solutions/wrong.py", tag="WA",
+        db,
+        problem_id=sample_problem.id,
+        name="wrong.py",
+        language="python",
+        source_path="solutions/wrong.py",
+        tag="WA",
     )
 
     summary = judge_all(db, sample_problem, checker_name="wcmp")

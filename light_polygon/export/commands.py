@@ -16,15 +16,20 @@ export_app = typer.Typer(help="Export problem data", no_args_is_help=True)
 def package(
     slug: str = typer.Argument(..., help="Problem slug to export"),
     output: str = typer.Option(
-        ".", "--output", "-o",
+        ".",
+        "--output",
+        "-o",
         help="Output path (directory or file; defaults to current directory)",
     ),
     format: str = typer.Option(
-        "native", "--format", "-f",
+        "native",
+        "--format",
+        "-f",
         help="Export format: 'native' (full backup) or 'polygon' (platform-compatible)",
     ),
     all_solutions: bool = typer.Option(
-        False, "--all-solutions",
+        False,
+        "--all-solutions",
         help="Include all solutions, not just AC-tagged ones",
     ),
 ) -> None:
@@ -41,11 +46,15 @@ def package(
         conn.close()
 
     if format not in ("native", "polygon"):
-        console.print(f"[red]Unknown format '{format}'. Use 'native' or 'polygon'.[/red]")
+        console.print(
+            f"[red]Unknown format '{format}'. Use 'native' or 'polygon'.[/red]"
+        )
         raise typer.Exit(1)
 
     try:
-        result = export_package(slug, output, format=format, all_solutions=all_solutions)
+        result = export_package(
+            slug, output, format=format, all_solutions=all_solutions
+        )
         console.print(f"[green]Exported '{slug}' to {result}[/green]")
     except FileNotFoundError as e:
         console.print(f"[red]{e}[/red]")

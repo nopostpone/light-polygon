@@ -52,30 +52,36 @@ def read_tests_toml(slug: str) -> TestsToml:
     result = TestsToml(slug=slug)
 
     for t in data.get("tests", []):
-        result.tests.append(ManualTest(
-            index=t.get("index", 0),
-            description=t.get("description", ""),
-            is_sample=t.get("is_sample", False),
-            input=t.get("input", ""),
-            answer=t.get("answer", ""),
-        ))
+        result.tests.append(
+            ManualTest(
+                index=t.get("index", 0),
+                description=t.get("description", ""),
+                is_sample=t.get("is_sample", False),
+                input=t.get("input", ""),
+                answer=t.get("answer", ""),
+            )
+        )
 
     generators_data = data.get("generators", {})
     for gen_name, gen_data in generators_data.items():
         invocations = []
         for inv in gen_data.get("invocations", []):
-            invocations.append(GeneratorInvocation(
-                args=inv.get("args", []),
-                answer_by=inv.get("answer_by", ""),
-                count=inv.get("count", 1),
-                description=inv.get("description", ""),
-            ))
-        result.generators.append(GeneratorConfig(
-            name=gen_name,
-            source=gen_data.get("source", ""),
-            testset=gen_data.get("testset", "tests"),
-            invocations=invocations,
-        ))
+            invocations.append(
+                GeneratorInvocation(
+                    args=inv.get("args", []),
+                    answer_by=inv.get("answer_by", ""),
+                    count=inv.get("count", 1),
+                    description=inv.get("description", ""),
+                )
+            )
+        result.generators.append(
+            GeneratorConfig(
+                name=gen_name,
+                source=gen_data.get("source", ""),
+                testset=gen_data.get("testset", "tests"),
+                invocations=invocations,
+            )
+        )
 
     return result
 

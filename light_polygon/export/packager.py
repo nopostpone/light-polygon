@@ -55,7 +55,9 @@ def export_package(
             if st_path.exists():
                 _add_file(zf, st_path, f"{slug}/statement.md")
             else:
-                console.print("  [yellow]Warning:[/yellow] statement.md not found, skipping")
+                console.print(
+                    "  [yellow]Warning:[/yellow] statement.md not found, skipping"
+                )
             _add_dir(zf, problem_dir / "tests", f"{slug}/tests")
             _add_solutions(zf, problem_dir, slug, None)  # None = all solutions
             _add_toml_if_exists(zf, problem_dir / "tests.toml", f"{slug}/tests.toml")
@@ -66,7 +68,9 @@ def export_package(
             if st_path.exists():
                 _add_file(zf, st_path, f"{slug}/statement.md")
             else:
-                console.print("  [yellow]Warning:[/yellow] statement.md not found, skipping")
+                console.print(
+                    "  [yellow]Warning:[/yellow] statement.md not found, skipping"
+                )
             _add_dir(zf, problem_dir / "tests", f"{slug}/tests")
             _add_solutions(zf, problem_dir, slug, ac_names)
             _add_dir(zf, problem_dir / "files", f"{slug}/files")
@@ -103,7 +107,9 @@ def _add_toml_if_exists(zf: zipfile.ZipFile, filepath: Path, arcname: str) -> No
 
 
 def _add_solutions(
-    zf: zipfile.ZipFile, problem_dir: Path, slug: str,
+    zf: zipfile.ZipFile,
+    problem_dir: Path,
+    slug: str,
     ac_names: set[str] | None,
 ) -> None:
     sol_dir = problem_dir / "solutions"
@@ -117,7 +123,9 @@ def _add_solutions(
 
 
 def _add_problem_json(
-    zf: zipfile.ZipFile, slug: str, toml_data: dict,
+    zf: zipfile.ZipFile,
+    slug: str,
+    toml_data: dict,
 ) -> None:
     test_dir = layout.problem_dir(slug) / "tests"
     test_count = 0
@@ -130,7 +138,7 @@ def _add_problem_json(
             if f.suffix == ".a":
                 answers.add(f.stem)  # stem of "01.a" is "01"
             elif f.suffix == "":
-                inputs.add(f.stem)   # stem of "01" is "01"
+                inputs.add(f.stem)  # stem of "01" is "01"
         test_count = len(inputs & answers)
 
     files_dir = layout.files_dir(slug)
@@ -162,7 +170,9 @@ def _add_problem_json(
             "checker": checker,
         },
     }
-    zf.writestr(f"{slug}/problem.json", json.dumps(problem_json, indent=2, ensure_ascii=False))
+    zf.writestr(
+        f"{slug}/problem.json", json.dumps(problem_json, indent=2, ensure_ascii=False)
+    )
 
 
 def print_summary(zf: zipfile.ZipFile, slug: str) -> None:

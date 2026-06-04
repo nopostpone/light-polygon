@@ -4,7 +4,13 @@ import shutil
 
 import typer
 from rich.panel import Panel
-from rich.progress import BarColumn, Progress, SpinnerColumn, TaskProgressColumn, TextColumn
+from rich.progress import (
+    BarColumn,
+    Progress,
+    SpinnerColumn,
+    TaskProgressColumn,
+    TextColumn,
+)
 from rich.table import Table
 
 from light_polygon.auth.commands import require_user
@@ -46,10 +52,19 @@ def _require_gpp() -> None:
 @judge_app.command()
 def run(
     slug: str = typer.Argument(..., help="Problem slug"),
-    solution_name: str = typer.Option("", "--solution", "-s", help="Judge only this solution"),
+    solution_name: str = typer.Option(
+        "", "--solution", "-s", help="Judge only this solution"
+    ),
     test_index: int = typer.Option(0, "--test", "-t", help="Judge only this test"),
-    checker: str = typer.Option("wcmp", "--checker", "-c", help="Checker name (wcmp, ncmp, lcmp, fcmp, rcmp4/6/9, yesno, nyesno, custom)"),
-    verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed output for failures"),
+    checker: str = typer.Option(
+        "wcmp",
+        "--checker",
+        "-c",
+        help="Checker name (wcmp, ncmp, lcmp, fcmp, rcmp4/6/9, yesno, nyesno, custom)",
+    ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="Show detailed output for failures"
+    ),
 ) -> None:
     """Judge all solutions on all tests."""
     require_user()
@@ -83,7 +98,9 @@ def run(
             return
 
         console.print(f"[heading]Judging '{slug}'[/heading]")
-        console.print(f"  Solutions: {len(solutions)}  Tests: {len(tests)}  Checker: {checker}")
+        console.print(
+            f"  Solutions: {len(solutions)}  Tests: {len(tests)}  Checker: {checker}"
+        )
         console.print()
 
         total_tests = len(solutions) * len(tests)
@@ -100,13 +117,21 @@ def run(
                 progress.advance(task)
 
             summary = judge_all(
-                conn, problem, solutions, tests,
-                checker_name=checker, on_test_judged=_advance,
+                conn,
+                problem,
+                solutions,
+                tests,
+                checker_name=checker,
+                on_test_judged=_advance,
             )
 
     # Compile errors
     for sol_name, err in summary.compile_errors.items():
-        console.print(Panel(err, title=f"[red]Compile Error: {sol_name}[/red]", border_style="red"))
+        console.print(
+            Panel(
+                err, title=f"[red]Compile Error: {sol_name}[/red]", border_style="red"
+            )
+        )
 
     # Summary table
     table = Table(title="Results")
@@ -143,7 +168,16 @@ def run(
     by_sol = summary.by_solution
     for sol in solutions:
         results = by_sol.get(sol.name, [])
-        counts = {"AC": 0, "WA": 0, "TLE": 0, "RTE": 0, "MLE": 0, "CE": 0, "PE": 0, "FAIL": 0}
+        counts = {
+            "AC": 0,
+            "WA": 0,
+            "TLE": 0,
+            "RTE": 0,
+            "MLE": 0,
+            "CE": 0,
+            "PE": 0,
+            "FAIL": 0,
+        }
         for r in results:
             counts[r.verdict] = counts.get(r.verdict, 0) + 1
         agg_table.add_row(
@@ -165,24 +199,30 @@ def run(
             continue
         has_wrong = any(r.verdict != sol.tag for r in results if r.verdict != "CE")
         if has_wrong and sol.tag != "MANUAL":
-            console.print(f"  [yellow]Solution '{sol.name}' tagged {sol.tag} but got unexpected verdicts[/yellow]")
+            console.print(
+                f"  [yellow]Solution '{sol.name}' tagged {sol.tag} but got unexpected verdicts[/yellow]"
+            )
 
     # Verbose output for failures
     if verbose:
         for r in summary.results:
             if r.verdict not in ("AC",):
                 console.print()
-                console.print(Panel(
-                    r.error or "(no details)",
-                    title=f"{r.solution.name} / Test #{r.test.test_index} / {r.verdict}",
-                    border_style="red",
-                ))
+                console.print(
+                    Panel(
+                        r.error or "(no details)",
+                        title=f"{r.solution.name} / Test #{r.test.test_index} / {r.verdict}",
+                        border_style="red",
+                    )
+                )
 
 
 @judge_app.command()
 def history(
     slug: str = typer.Argument(..., help="Problem slug"),
-    solution_name: str = typer.Option("", "--solution", "-s", help="Filter by solution"),
+    solution_name: str = typer.Option(
+        "", "--solution", "-s", help="Filter by solution"
+    ),
     limit: int = typer.Option(20, "--limit", "-n", help="Number of results to show"),
 ) -> None:
     """Show recent judging history."""

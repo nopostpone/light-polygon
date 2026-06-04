@@ -16,7 +16,9 @@ def test_help():
 def test_user_register_and_login(temp_data_dir):
     """Test user register, login, whoami, logout flow."""
     # Register
-    result = runner.invoke(app, ["user", "register", "testuser"], input="pass1234\npass1234\n")
+    result = runner.invoke(
+        app, ["user", "register", "testuser"], input="pass1234\npass1234\n"
+    )
     assert result.exit_code == 0
     assert "registered" in result.stdout.lower()
 
@@ -68,12 +70,14 @@ def test_end_to_end_judging(temp_data_dir):
 
     # Add test via stdin
     result = runner.invoke(
-        app, ["test", "add", "a-plus-b", "--sample", "--desc", "basic addition"],
+        app,
+        ["test", "add", "a-plus-b", "--sample", "--desc", "basic addition"],
         input="3 5\n",
     )
     assert result.exit_code == 0
     # Write answer
     from light_polygon.problem import layout
+
     answer_path = layout.test_answer_path("a-plus-b", 1)
     answer_path.parent.mkdir(parents=True, exist_ok=True)
     answer_path.write_text("8\n", encoding="utf-8")
@@ -82,9 +86,13 @@ def test_end_to_end_judging(temp_data_dir):
     sol_dir = layout.solutions_dir("a-plus-b")
     sol_dir.mkdir(parents=True, exist_ok=True)
     sol_path = sol_dir / "solve.py"
-    sol_path.write_text("import sys\na,b=map(int,sys.stdin.read().split())\nprint(a+b)\n")
+    sol_path.write_text(
+        "import sys\na,b=map(int,sys.stdin.read().split())\nprint(a+b)\n"
+    )
 
-    result = runner.invoke(app, ["solution", "add", "a-plus-b", str(sol_path), "--tag", "AC"])
+    result = runner.invoke(
+        app, ["solution", "add", "a-plus-b", str(sol_path), "--tag", "AC"]
+    )
     assert result.exit_code == 0
 
     # Judge

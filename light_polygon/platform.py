@@ -41,7 +41,9 @@ def normalize_executable_path(output_path: Path) -> Path:
     return output_path
 
 
-def make_resource_limit_setter(time_limit_ms: int, memory_limit_mb: int) -> Callable | None:
+def make_resource_limit_setter(
+    time_limit_ms: int, memory_limit_mb: int
+) -> Callable | None:
     """Return a preexec_fn for Unix resource limits, or None on Windows."""
     if is_windows():
         return None
@@ -52,12 +54,15 @@ def make_resource_limit_setter(time_limit_ms: int, memory_limit_mb: int) -> Call
 
             cpu_seconds = time_limit_ms / 1000.0 + 1
             resource.setrlimit(  # type: ignore
-                resource.RLIMIT_CPU, (int(cpu_seconds) + 1, int(cpu_seconds) + 2)  # type: ignore
+                resource.RLIMIT_CPU,
+                (int(cpu_seconds) + 1, int(cpu_seconds) + 2),  # type: ignore
             )
             mem_bytes = memory_limit_mb * 1024 * 1024
             resource.setrlimit(resource.RLIMIT_AS, (mem_bytes * 2, mem_bytes * 2))  # type: ignore
             resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))  # type: ignore
-            resource.setrlimit(resource.RLIMIT_FSIZE, (64 * 1024 * 1024, 64 * 1024 * 1024))  # type: ignore
+            resource.setrlimit(
+                resource.RLIMIT_FSIZE, (64 * 1024 * 1024, 64 * 1024 * 1024)
+            )  # type: ignore
         except (ImportError, ValueError, resource.error):  # type: ignore
             pass
 

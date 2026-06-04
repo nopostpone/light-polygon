@@ -36,6 +36,7 @@ def init_db() -> None:
             conn.commit()
 
         from light_polygon.db.migrations import run_migrations
+
         run_migrations(conn)
     finally:
         conn.close()

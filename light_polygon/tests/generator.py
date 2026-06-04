@@ -30,19 +30,25 @@ def get_testlib_include_dir() -> Path:
 def compile_generator(slug: str, gen_config: GeneratorConfig) -> CompileResult:
     source_path = layout.generators_dir(slug) / gen_config.source
     if not source_path.exists():
-        return CompileResult(success=False, errors=f"Generator source not found: {source_path}")
+        return CompileResult(
+            success=False, errors=f"Generator source not found: {source_path}"
+        )
     # FOR_LINUX disables Windows-specific console/CRLF behavior in testlib.h,
     # forcing POSIX-style LF-only input processing. This keeps behavior
     # consistent across platforms (our sandbox already normalises \r\n → \n).
     return compile_source(
-        source_path, "cpp",
+        source_path,
+        "cpp",
         include_dirs=[str(get_testlib_include_dir())],
         defines=["FOR_LINUX"],
     )
 
 
 def run_generator(
-    executable: Path, args: list[str], seed: int, working_dir: Path,
+    executable: Path,
+    args: list[str],
+    seed: int,
+    working_dir: Path,
 ) -> SandboxResult:
     cmd = [str(executable)] + args + ["--seed", str(seed)]
     return run_sandboxed(
@@ -59,7 +65,8 @@ def compile_validator(slug: str) -> CompileResult | None:
         return None
     # See compile_generator for the rationale behind FOR_LINUX.
     return compile_source(
-        source_path, "cpp",
+        source_path,
+        "cpp",
         include_dirs=[str(get_testlib_include_dir())],
         defines=["FOR_LINUX"],
     )
@@ -105,7 +112,9 @@ def _resolve_solution_path(problem: Problem, sol: Solution) -> Path | None:
 
 
 def generate_answer(
-    problem: Problem, answer_by: str, input_data: str,
+    problem: Problem,
+    answer_by: str,
+    input_data: str,
 ) -> tuple[str, str | None]:
     """Run reference solution to produce answer. Returns (answer, error)."""
     if not answer_by:
@@ -142,7 +151,10 @@ def generate_answer(
     )
 
     if result.verdict != "AC":
-        return "", f"Answer solution '{answer_by}' failed: {result.verdict} (exit {result.exit_code})"
+        return (
+            "",
+            f"Answer solution '{answer_by}' failed: {result.verdict} (exit {result.exit_code})",
+        )
 
     return result.stdout, None
 
@@ -152,7 +164,9 @@ def _make_seed(gen_name: str, inv_idx: int, i: int) -> int:
     return base + inv_idx * 100000 + i
 
 
-def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Connection | None = None) -> int:
+def execute_generators(
+    problem: Problem, tests_toml: TestsToml, conn: sqlite3.Connection | None = None
+) -> int:
     created = 0
     should_close = conn is None
     if conn is None:
@@ -169,7 +183,9 @@ def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Co
                 validator_exe = val_result.executable_path
                 console.print("[bold]Validator:[/bold] validator.cpp")
             else:
-                console.print(f"[red]Validator compile error:[/red] {val_result.errors}")
+                console.print(
+                    f"[red]Validator compile error:[/red] {val_result.errors}"
+                )
                 return 0
 
         # ── Manual tests ─────────────────────────────────────────────
@@ -184,8 +200,12 @@ def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Co
                     console.print(f"    [dim]{msg[:200]}[/dim]")
                     continue
             mgr.add(
-                problem.id, idx, mt.input, mt.answer,
-                description=mt.description, is_sample=mt.is_sample,
+                problem.id,
+                idx,
+                mt.input,
+                mt.answer,
+                description=mt.description,
+                is_sample=mt.is_sample,
                 generator="manual",
             )
             console.print(f"  [dim]Manual test #{idx}[/dim] {mt.description or ''}")
@@ -236,7 +256,9 @@ def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Co
                             continue
 
                     answer_data, error = generate_answer(
-                        problem, inv.answer_by, input_data,
+                        problem,
+                        inv.answer_by,
+                        input_data,
                     )
                     if error:
                         console.print(f"  [yellow]Skip (seed={seed}): {error}[/yellow]")
@@ -245,13 +267,21 @@ def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Co
                     idx = mgr.next_index(problem.id)
                     gen_label = f"{gen.name}[{inv_idx}]:{seed}"
                     mgr.add(
-                        problem.id, idx, input_data, answer_data,
-                        testset=gen.testset, description=desc,
+                        problem.id,
+                        idx,
+                        input_data,
+                        answer_data,
+                        testset=gen.testset,
+                        description=desc,
                         generator=gen_label,
                     )
                     console.print(
                         f"  [green]Test #{idx}[/green] {desc}"
-                        + (f" [dim](answer by {inv.answer_by})[/dim]" if inv.answer_by else "")
+                        + (
+                            f" [dim](answer by {inv.answer_by})[/dim]"
+                            if inv.answer_by
+                            else ""
+                        )
                     )
                     created += 1
     finally:

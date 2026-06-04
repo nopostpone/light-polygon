@@ -103,11 +103,13 @@ def list_users() -> None:
     conn = get_connection()
     try:
         from light_polygon.db.models import User
+
         users = User.list_all(conn)
         if not users:
             console.print("[dim]No users registered yet.[/dim]")
             return
         from rich.table import Table
+
         table = Table(title="Users")
         table.add_column("ID", style="dim")
         table.add_column("Username")

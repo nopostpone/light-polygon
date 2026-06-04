@@ -41,6 +41,7 @@ def _get_resource_usage(proc: psutil.Popen) -> tuple[int, int]:
 
     return cpu_time_ms, memory_kb
 
+
 MAX_OUTPUT_BYTES = 64 * 1024 * 1024  # 64 MB limit on stdout/stderr
 
 
@@ -114,14 +115,14 @@ def run_sandboxed(
 
         cpu_time_ms, memory_kb = _get_resource_usage(proc)
 
-        stderr_text = (
-            (stderr_bytes or b"").decode("utf-8", errors="replace")[:MAX_OUTPUT_BYTES]
-        )
+        stderr_text = (stderr_bytes or b"").decode("utf-8", errors="replace")[
+            :MAX_OUTPUT_BYTES
+        ]
         exit_code = normalize_exit_code(exit_code, stderr_text)
 
-        stdout = (
-            (stdout_bytes or b"").decode("utf-8", errors="replace")[:MAX_OUTPUT_BYTES]
-        )
+        stdout = (stdout_bytes or b"").decode("utf-8", errors="replace")[
+            :MAX_OUTPUT_BYTES
+        ]
         stdout = stdout.replace("\r\n", "\n")
         stderr_text = stderr_text.replace("\r\n", "\n")
 

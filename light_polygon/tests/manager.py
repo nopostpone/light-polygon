@@ -11,10 +11,17 @@ class TestManager:
         self.conn = conn
         self.slug = slug
 
-    def add(self, problem_id: int, test_index: int, input_data: str,
-            answer_data: str = "", testset: str = "tests",
-            description: str = "", is_sample: bool = False,
-            generator: str = "") -> TestCase:
+    def add(
+        self,
+        problem_id: int,
+        test_index: int,
+        input_data: str,
+        answer_data: str = "",
+        testset: str = "tests",
+        description: str = "",
+        is_sample: bool = False,
+        generator: str = "",
+    ) -> TestCase:
         input_path = layout.test_input_path(self.slug, test_index)
         answer_path = layout.test_answer_path(self.slug, test_index)
 
@@ -27,8 +34,12 @@ class TestManager:
             answer_path.touch()
 
         tc = TestCase.create(
-            self.conn, problem_id=problem_id, test_index=test_index,
-            testset=testset, description=description, is_sample=is_sample,
+            self.conn,
+            problem_id=problem_id,
+            test_index=test_index,
+            testset=testset,
+            description=description,
+            is_sample=is_sample,
             generator=generator,
         )
         return tc

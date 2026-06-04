@@ -52,12 +52,23 @@ def checkers_dir(slug: str) -> Path:
     return problem_dir(slug) / "checkers"
 
 
-def init_problem_dir(slug: str, title: str, time_limit_ms: int = 1000,
-                     memory_limit_mb: int = 256, input_file: str = "stdin",
-                     output_file: str = "stdout", is_private: bool = True) -> Path:
+def init_problem_dir(
+    slug: str,
+    title: str,
+    time_limit_ms: int = 1000,
+    memory_limit_mb: int = 256,
+    input_file: str = "stdin",
+    output_file: str = "stdout",
+    is_private: bool = True,
+) -> Path:
     root = problem_dir(slug)
-    for d in [root, tests_dir(slug), solutions_dir(slug), files_dir(slug),
-              generators_dir(slug)]:
+    for d in [
+        root,
+        tests_dir(slug),
+        solutions_dir(slug),
+        files_dir(slug),
+        generators_dir(slug),
+    ]:
         d.mkdir(parents=True, exist_ok=True)
 
     toml_data = {
@@ -74,7 +85,10 @@ def init_problem_dir(slug: str, title: str, time_limit_ms: int = 1000,
 
     st = statement_path(slug)
     if not st.exists():
-        st.write_text(f"# {title}\n\n## Description\n\n## Input\n\n## Output\n\n## Examples\n\n## Notes\n", encoding="utf-8")
+        st.write_text(
+            f"# {title}\n\n## Description\n\n## Input\n\n## Output\n\n## Examples\n\n## Notes\n",
+            encoding="utf-8",
+        )
 
     return root
 
@@ -96,6 +110,7 @@ def write_problem_toml(slug: str, data: dict) -> None:
 
 def remove_problem_dir(slug: str) -> None:
     import shutil
+
     root = problem_dir(slug)
     if root.exists():
         shutil.rmtree(root)

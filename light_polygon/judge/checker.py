@@ -16,11 +16,11 @@ class CheckResult:
 
 # testlib.h exit code mapping (Polygon standard)
 TESTLIB_EXIT_CODES = {
-    0: "AC",    # _ok
-    1: "WA",    # _wa
-    2: "PE",    # _pe
+    0: "AC",  # _ok
+    1: "WA",  # _wa
+    2: "PE",  # _pe
     3: "FAIL",  # _fail
-    7: "AC",    # _points (partial score, treated as AC for now)
+    7: "AC",  # _points (partial score, treated as AC for now)
 }
 
 
@@ -60,7 +60,8 @@ def run_testlib_checker(
     if verdict == "FAIL":
         return CheckResult(
             verdict="FAIL",
-            message=result.stderr.strip() or f"Checker failed with exit code {result.exit_code}",
+            message=result.stderr.strip()
+            or f"Checker failed with exit code {result.exit_code}",
         )
 
     if verdict == "AC":
@@ -73,9 +74,16 @@ def run_testlib_checker(
 
 # Standard checker names bundled with light-polygon
 STANDARD_CHECKERS = [
-    "wcmp", "ncmp", "lcmp", "fcmp", "hcmp",
-    "rcmp4", "rcmp6", "rcmp9",
-    "yesno", "nyesno",
+    "wcmp",
+    "ncmp",
+    "lcmp",
+    "fcmp",
+    "hcmp",
+    "rcmp4",
+    "rcmp6",
+    "rcmp9",
+    "yesno",
+    "nyesno",
 ]
 
 

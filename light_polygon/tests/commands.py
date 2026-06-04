@@ -32,7 +32,9 @@ def _require_gpp() -> None:
 @test_app.command()
 def add(
     slug: str = typer.Argument(..., help="Problem slug"),
-    input_file: str = typer.Option("", "--input", "-i", help="Input file path (reads stdin if omitted)"),
+    input_file: str = typer.Option(
+        "", "--input", "-i", help="Input file path (reads stdin if omitted)"
+    ),
     answer_file: str = typer.Option("", "--answer", "-a", help="Answer file path"),
     sample: bool = typer.Option(False, "--sample", "-s", help="Mark as sample test"),
     description: str = typer.Option("", "--desc", "-d", help="Test description"),
@@ -52,6 +54,7 @@ def add(
         else:
             console.print("[dim]Paste input data (Ctrl+D or Ctrl+Z to finish):[/dim]")
             import sys
+
             input_data = sys.stdin.read()
 
         answer_data = ""
@@ -61,8 +64,12 @@ def add(
         mgr = TestManager(conn, slug)
         idx = mgr.next_index(problem.id)
         tc = mgr.add(
-            problem.id, idx, input_data, answer_data,
-            description=description, is_sample=sample,
+            problem.id,
+            idx,
+            input_data,
+            answer_data,
+            description=description,
+            is_sample=sample,
         )
         conn.commit()
         console.print(f"[green]Test #{tc.test_index} added to '{slug}'.[/green]")
@@ -96,7 +103,8 @@ def list_tests(
         table.add_column("Verified")
         for t in tests:
             table.add_row(
-                str(t.test_index), t.description or "-",
+                str(t.test_index),
+                t.description or "-",
                 "yes" if t.is_sample else "no",
                 "yes" if t.verified else "no",
             )
@@ -168,7 +176,9 @@ def sample(
 @test_app.command(name="gen-config")
 def gen_config(
     slug: str = typer.Argument(..., help="Problem slug"),
-    force: bool = typer.Option(False, "--force", "-f", help="Overwrite existing tests.toml"),
+    force: bool = typer.Option(
+        False, "--force", "-f", help="Overwrite existing tests.toml"
+    ),
 ) -> None:
     """Create a template tests.toml for the problem."""
     require_user()
@@ -201,7 +211,9 @@ def gen_config(
 def generate(
     slug: str = typer.Argument(..., help="Problem slug"),
     generator_name: str = typer.Option(
-        "", "--generator", "-g",
+        "",
+        "--generator",
+        "-g",
         help="Generate only this specific generator",
     ),
 ) -> None:

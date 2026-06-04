@@ -46,7 +46,9 @@ def _compile_checker(problem: Problem, checker_name: str) -> CompileResult:
     """Compile the checker for a problem. Returns CompileResult."""
     source_path = get_checker_source_path(problem.slug, checker_name)
     if source_path is None:
-        return CompileResult(success=False, errors=f"Checker source not found for '{checker_name}'")
+        return CompileResult(
+            success=False, errors=f"Checker source not found for '{checker_name}'"
+        )
 
     # Include vendor/testlib for standard checkers, and problem files/ for custom
     include_dirs = [str(Path(__file__).parent.parent / "vendor")]
@@ -57,7 +59,9 @@ def _compile_checker(problem: Problem, checker_name: str) -> CompileResult:
     return compile_source(source_path, "cpp", include_dirs=include_dirs)
 
 
-def _run_solution(problem: Problem, solution: Solution, test: TestCase, executable: Path) -> SandboxResult:
+def _run_solution(
+    problem: Problem, solution: Solution, test: TestCase, executable: Path
+) -> SandboxResult:
     input_path = layout.test_input_path(problem.slug, test.test_index)
     input_data = input_path.read_text(encoding="utf-8")
 
@@ -107,9 +111,14 @@ def judge_solution(
     if not checker_result.success:
         error = f"Checker '{checker_name}' compilation failed: {checker_result.errors}"
         for test in tests:
-            results.append(JudgeResult(
-                solution=solution, test=test, verdict="CE", error=error,
-            ))
+            results.append(
+                JudgeResult(
+                    solution=solution,
+                    test=test,
+                    verdict="CE",
+                    error=error,
+                )
+            )
         return results
 
     checker_exe = checker_result.executable_path
@@ -123,9 +132,14 @@ def judge_solution(
     if not compile_result.success:
         error = compile_result.errors
         for test in tests:
-            results.append(JudgeResult(
-                solution=solution, test=test, verdict="CE", error=error,
-            ))
+            results.append(
+                JudgeResult(
+                    solution=solution,
+                    test=test,
+                    verdict="CE",
+                    error=error,
+                )
+            )
         return results
 
     sol_executable = compile_result.executable_path
@@ -144,7 +158,9 @@ def judge_solution(
             # Write output to temp file for checker.
             # Use binary mode to avoid Windows text mode \n -> \r\n conversion,
             # which confuses testlib checkers.
-            with tempfile.NamedTemporaryFile(mode="wb", suffix=".txt", delete=False) as f:
+            with tempfile.NamedTemporaryFile(
+                mode="wb", suffix=".txt", delete=False
+            ) as f:
                 f.write(sandbox_result.stdout.encode("utf-8"))
                 output_path = Path(f.name)
 
@@ -180,17 +196,19 @@ def judge_solution(
             error_text=error[:1000] if error else "",
         )
 
-        results.append(JudgeResult(
-            solution=solution,
-            test=test,
-            verdict=verdict,
-            score=score,
-            cpu_time_ms=sandbox_result.cpu_time_ms,
-            wall_time_ms=sandbox_result.wall_time_ms,
-            memory_kb=sandbox_result.memory_kb,
-            error=error,
-            invocation=invocation,
-        ))
+        results.append(
+            JudgeResult(
+                solution=solution,
+                test=test,
+                verdict=verdict,
+                score=score,
+                cpu_time_ms=sandbox_result.cpu_time_ms,
+                wall_time_ms=sandbox_result.wall_time_ms,
+                memory_kb=sandbox_result.memory_kb,
+                error=error,
+                invocation=invocation,
+            )
+        )
         if on_test_judged is not None:
             on_test_judged()
 
@@ -230,7 +248,11 @@ def judge_all(
 
     for sol in solutions:
         results = judge_solution(
-            conn, problem, sol, tests, checker_name,
+            conn,
+            problem,
+            sol,
+            tests,
+            checker_name,
             on_test_judged=on_test_judged,
         )
         summary.results.extend(results)
