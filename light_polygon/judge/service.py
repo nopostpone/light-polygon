@@ -9,7 +9,7 @@ from pathlib import Path
 import sqlite3
 
 from light_polygon.db.models import Invocation, Problem, Solution, TestCase
-from light_polygon.judge.checker import CheckResult, get_checker_source_path, run_testlib_checker
+from light_polygon.judge.checker import get_checker_source_path, run_testlib_checker
 from light_polygon.judge.compiler import CompileResult, compile_source
 from light_polygon.judge.sandbox import SandboxResult, run_sandboxed
 from light_polygon.problem import layout

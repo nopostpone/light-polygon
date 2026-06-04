@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from light_polygon.judge.sandbox import SandboxResult, run_sandboxed
+from light_polygon.judge.sandbox import run_sandboxed
 from light_polygon.problem import layout
 
 

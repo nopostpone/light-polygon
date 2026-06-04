@@ -8,7 +8,6 @@ from pathlib import Path
 import psutil
 
 from light_polygon.platform import (
-    get_cpu_time_ms,
     get_memory_kb,
     make_resource_limit_setter,
     normalize_exit_code,

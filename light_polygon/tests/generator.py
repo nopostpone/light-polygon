@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import hashlib
+import sqlite3
 from pathlib import Path
 
-from light_polygon.config import get_config
 from light_polygon.db.connection import get_connection
 from light_polygon.db.models import Problem, Solution
 from light_polygon.judge.compiler import CompileResult, compile_source
@@ -12,7 +12,7 @@ from light_polygon.platform import normalize_exit_code
 from light_polygon.problem import layout
 from light_polygon.solution.manager import language_from_path
 from light_polygon.tests.manager import TestManager
-from light_polygon.tests.toml_config import GeneratorConfig, GeneratorInvocation, ManualTest, TestsToml
+from light_polygon.tests.toml_config import GeneratorConfig, TestsToml
 from light_polygon.utils.console import console
 
 GENERATOR_TIME_LIMIT_MS = 30000
@@ -167,7 +167,7 @@ def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Co
         if val_result is not None:
             if val_result.success:
                 validator_exe = val_result.executable_path
-                console.print(f"[bold]Validator:[/bold] validator.cpp")
+                console.print("[bold]Validator:[/bold] validator.cpp")
             else:
                 console.print(f"[red]Validator compile error:[/red] {val_result.errors}")
                 return 0

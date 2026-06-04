@@ -55,7 +55,7 @@ def export_package(
             if st_path.exists():
                 _add_file(zf, st_path, f"{slug}/statement.md")
             else:
-                console.print(f"  [yellow]Warning:[/yellow] statement.md not found, skipping")
+                console.print("  [yellow]Warning:[/yellow] statement.md not found, skipping")
             _add_dir(zf, problem_dir / "tests", f"{slug}/tests")
             _add_solutions(zf, problem_dir, slug, None)  # None = all solutions
             _add_toml_if_exists(zf, problem_dir / "tests.toml", f"{slug}/tests.toml")
@@ -66,7 +66,7 @@ def export_package(
             if st_path.exists():
                 _add_file(zf, st_path, f"{slug}/statement.md")
             else:
-                console.print(f"  [yellow]Warning:[/yellow] statement.md not found, skipping")
+                console.print("  [yellow]Warning:[/yellow] statement.md not found, skipping")
             _add_dir(zf, problem_dir / "tests", f"{slug}/tests")
             _add_solutions(zf, problem_dir, slug, ac_names)
             _add_dir(zf, problem_dir / "files", f"{slug}/files")
@@ -139,9 +139,9 @@ def _add_problem_json(
     if files_dir.exists():
         for f in files_dir.iterdir():
             if f.name == "validator.cpp":
-                validator = f"files/validator.cpp"
+                validator = "files/validator.cpp"
             elif f.name == "checker.cpp":
-                checker = f"files/checker.cpp"
+                checker = "files/checker.cpp"
 
     problem_json = {
         "schema_version": "1.0",

@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 
-from light_polygon.db.models import Solution, TestCase
+from light_polygon.db.models import Solution
 from light_polygon.judge.compiler import compile_source
 from light_polygon.judge.service import judge_all
 from light_polygon.problem import layout
@@ -31,7 +30,7 @@ def test_judge_python_solution(sample_problem, db):
     sol_path.parent.mkdir(parents=True, exist_ok=True)
     sol_path.write_text("import sys\na, b = map(int, sys.stdin.read().split())\nprint(a + b)\n")
 
-    solution = Solution.create(
+    Solution.create(
         db, problem_id=sample_problem.id, name="solve.py",
         language="python", source_path="solutions/solve.py", tag="AC",
     )

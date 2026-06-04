@@ -45,10 +45,10 @@ def add(
         sol_name = name if name else source_path.name
         lang = language_from_path(source_path)
 
-        dest = add_solution_file(slug, sol_name, source_path)
+        _ = add_solution_file(slug, sol_name, source_path)
         rel_path = f"solutions/{sol_name}"
 
-        solution = Solution.create(
+        Solution.create(
             conn, problem_id=problem.id, name=sol_name,
             language=lang, source_path=rel_path, tag=tag,
         )

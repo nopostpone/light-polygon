@@ -9,7 +9,6 @@ from light_polygon.problem.commands import problem_app
 from light_polygon.solution.commands import solution_app
 from light_polygon.statement.commands import statement_app
 from light_polygon.tests.commands import test_app
-from light_polygon.utils.console import console
 
 app = typer.Typer(
     name="light-polygon",

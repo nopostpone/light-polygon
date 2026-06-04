@@ -6,7 +6,6 @@ from pathlib import Path
 from markdown_it import MarkdownIt
 from markdown_it.rules_block import StateBlock
 from markdown_it.rules_inline import StateInline
-from markdown_it.token import Token
 
 
 # ─── Markdown → HTML with MathJax ──────────────────────────────────
@@ -55,12 +54,12 @@ def _math_display(state: StateBlock, start_line: int, end_line: int, silent: boo
         else:
             content_lines = []
             for j in range(start_line, end_line_idx + 1):
-                l = state.src[state.bMarks[j]:state.eMarks[j]].rstrip()
+                line_text = state.src[state.bMarks[j]:state.eMarks[j]].rstrip()
                 if j == start_line:
-                    l = l[2:] if l.startswith("$$") else l
+                    line_text = line_text[2:] if line_text.startswith("$$") else line_text
                 if j == end_line_idx:
-                    l = l[:-2] if l.rstrip().endswith("$$") else l
-                content_lines.append(l)
+                    line_text = line_text[:-2] if line_text.rstrip().endswith("$$") else line_text
+                content_lines.append(line_text)
             content = "\n".join(content_lines)
 
         token = state.push("math_display", "", 0)

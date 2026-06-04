@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sqlite3
-from pathlib import Path
 
 from light_polygon.db.models import TestCase
 from light_polygon.problem import layout

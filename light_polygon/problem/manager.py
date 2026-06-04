@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 
-from light_polygon.db.models import Problem, User
+from light_polygon.db.models import Problem
 from light_polygon.problem import layout
 
 

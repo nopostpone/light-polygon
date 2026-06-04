@@ -82,8 +82,6 @@ def list_problems(
         table.add_column("ML (MB)")
         table.add_column("Private")
         for p in problems:
-            owner = User.find_by_id(conn, p.owner_id)
-            owner_name = owner.username if owner else "?"
             table.add_row(
                 p.slug, p.title, str(p.time_limit_ms),
                 str(p.memory_limit_mb), "yes" if p.is_private else "no",

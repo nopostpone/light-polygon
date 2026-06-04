@@ -74,7 +74,6 @@ def test_end_to_end_judging(temp_data_dir):
     assert result.exit_code == 0
     # Write answer
     from light_polygon.problem import layout
-    from light_polygon.db.connection import get_db
     answer_path = layout.test_answer_path("a-plus-b", 1)
     answer_path.parent.mkdir(parents=True, exist_ok=True)
     answer_path.write_text("8\n", encoding="utf-8")

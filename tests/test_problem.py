@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
 
 from light_polygon.db.models import Problem, User
 from light_polygon.problem.manager import ProblemError, ProblemManager
@@ -72,7 +71,7 @@ def test_delete_problem(db, logged_in_user):
 
 def test_problem_directory_created(db, logged_in_user, temp_data_dir):
     mgr = ProblemManager(db)
-    problem = mgr.create("dir-test", "Directory Test", logged_in_user.id)
+    mgr.create("dir-test", "Directory Test", logged_in_user.id)
     from light_polygon.problem import layout
     d = layout.problem_dir("dir-test")
     assert d.exists()

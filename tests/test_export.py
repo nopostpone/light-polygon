@@ -2,9 +2,7 @@ from __future__ import annotations
 
 import json
 import zipfile
-from pathlib import Path
 
-import pytest
 from typer.testing import CliRunner
 
 from light_polygon.cli import app
@@ -28,7 +26,6 @@ def _create_problem(runner: CliRunner, slug: str, title: str = "Test") -> None:
 
 
 def _add_solution(runner: CliRunner, slug: str, code: str, name: str, tag: str = "AC") -> None:
-    from light_polygon.config import get_config
     from light_polygon.problem import layout
     sol_dir = layout.solutions_dir(slug)
     sol_dir.mkdir(parents=True, exist_ok=True)
@@ -42,7 +39,6 @@ def _add_solution(runner: CliRunner, slug: str, code: str, name: str, tag: str =
 
 def _add_test(runner: CliRunner, slug: str, idx: int, inp: str, ans: str,
               is_sample: bool = False) -> None:
-    from light_polygon.config import get_config
     from light_polygon.problem import layout
     td = layout.tests_dir(slug)
     td.mkdir(parents=True, exist_ok=True)

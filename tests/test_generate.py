@@ -2,14 +2,12 @@ from __future__ import annotations
 
 import os
 import subprocess
-from pathlib import Path
 from unittest import mock
 
 import pytest
 
 from light_polygon.db.models import TestCase
 from light_polygon.judge.compiler import compile_source
-from light_polygon.judge.sandbox import run_sandboxed
 from light_polygon.problem import layout
 from light_polygon.tests.generator import (
     _make_seed,
@@ -202,7 +200,7 @@ class TestGeneratorCompile:
     def test_minimal_generator_compiles(self, temp_data_dir, db, logged_in_user):
         from light_polygon.problem.manager import ProblemManager
         mgr = ProblemManager(db)
-        problem = mgr.create(
+        mgr.create(
             slug="gen-test", title="Gen Test", owner_id=logged_in_user.id,
         )
 
@@ -228,7 +226,7 @@ int main(int argc, char* argv[]) {
     def test_generator_runs_and_produces_output(self, temp_data_dir, db, logged_in_user):
         from light_polygon.problem.manager import ProblemManager
         mgr = ProblemManager(db)
-        problem = mgr.create(
+        mgr.create(
             slug="gen-run", title="Gen Run", owner_id=logged_in_user.id,
         )
         gen_dir = layout.generators_dir("gen-run")

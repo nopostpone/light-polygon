@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-import hashlib
 import sqlite3
-from dataclasses import dataclass, field
-from datetime import datetime
-from pathlib import Path
-from typing import Any
+from dataclasses import dataclass
 
 
 # ─── Row-to-dict helpers ───────────────────────────────────────────
