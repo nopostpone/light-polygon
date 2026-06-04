@@ -14,6 +14,34 @@ from light_polygon.platform import (
     normalize_exit_code,
 )
 
+
+def _get_resource_usage(proc: psutil.Popen) -> tuple[int, int]:
+    """Get CPU time (ms) and peak memory (KB) from a finished psutil process.
+
+    Falls back to platform helpers on Unix if psutil data is unavailable.
+    """
+    cpu_time_ms = 0
+    memory_kb = 0
+
+    try:
+        times = proc.cpu_times()
+        cpu_time_ms = int((times.user + times.system) * 1000)
+    except (psutil.NoSuchProcess, psutil.AccessDenied, AttributeError):
+        pass
+
+    try:
+        mem = proc.memory_info()
+        # Windows: peak_wset is peak working set size in bytes
+        peak = getattr(mem, "peak_wset", 0)
+        if peak:
+            memory_kb = peak // 1024
+        else:
+            memory_kb = get_memory_kb()
+    except (psutil.NoSuchProcess, psutil.AccessDenied, AttributeError):
+        memory_kb = get_memory_kb()
+
+    return cpu_time_ms, memory_kb
+
 MAX_OUTPUT_BYTES = 64 * 1024 * 1024  # 64 MB limit on stdout/stderr
 
 
@@ -85,8 +113,7 @@ def run_sandboxed(
         wall_time_ms = int((time.monotonic() - start) * 1000)
         exit_code = proc.returncode
 
-        cpu_time_ms = get_cpu_time_ms()
-        memory_kb = get_memory_kb()
+        cpu_time_ms, memory_kb = _get_resource_usage(proc)
 
         stderr_text = (
             (stderr_bytes or b"").decode("utf-8", errors="replace")[:MAX_OUTPUT_BYTES]

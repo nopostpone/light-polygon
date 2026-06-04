@@ -9,7 +9,7 @@ import sqlite3
 
 from light_polygon.db.models import Invocation, Problem, Solution, TestCase
 from light_polygon.judge.checker import CheckResult, get_checker_source_path, run_testlib_checker
-from light_polygon.judge.compiler import compile_source
+from light_polygon.judge.compiler import CompileResult, compile_source
 from light_polygon.judge.sandbox import SandboxResult, run_sandboxed
 from light_polygon.problem import layout
 
@@ -41,11 +41,11 @@ class JudgeSummary:
         return groups
 
 
-def _compile_checker(problem: Problem, checker_name: str) -> Path | None:
-    """Compile the checker for a problem. Returns executable path or None on failure."""
+def _compile_checker(problem: Problem, checker_name: str) -> CompileResult:
+    """Compile the checker for a problem. Returns CompileResult."""
     source_path = get_checker_source_path(problem.slug, checker_name)
     if source_path is None:
-        return None
+        return CompileResult(success=False, errors=f"Checker source not found for '{checker_name}'")
 
     # Include vendor/testlib for standard checkers, and problem files/ for custom
     include_dirs = [str(Path(__file__).parent.parent / "vendor")]
@@ -53,10 +53,7 @@ def _compile_checker(problem: Problem, checker_name: str) -> Path | None:
     if problem_files.exists():
         include_dirs.append(str(problem_files))
 
-    result = compile_source(source_path, "cpp", include_dirs=include_dirs)
-    if not result.success:
-        return None
-    return result.executable_path
+    return compile_source(source_path, "cpp", include_dirs=include_dirs)
 
 
 def _run_solution(problem: Problem, solution: Solution, test: TestCase, executable: Path) -> SandboxResult:
@@ -103,14 +100,16 @@ def judge_solution(
     results: list[JudgeResult] = []
 
     # Compile checker once
-    checker_exe = _compile_checker(problem, checker_name)
-    if checker_exe is None:
-        error = f"Checker '{checker_name}' compilation failed or not found"
+    checker_result = _compile_checker(problem, checker_name)
+    if not checker_result.success:
+        error = f"Checker '{checker_name}' compilation failed: {checker_result.errors}"
         for test in tests:
             results.append(JudgeResult(
                 solution=solution, test=test, verdict="CE", error=error,
             ))
         return results
+
+    checker_exe = checker_result.executable_path
 
     # Compile solution
     sol_path = layout.solutions_dir(problem.slug) / solution.source_path.split("/")[-1]

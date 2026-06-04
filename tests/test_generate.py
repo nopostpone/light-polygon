@@ -299,7 +299,7 @@ int main(int argc, char* argv[]) {
         )
         write_tests_toml("e2e-gen", tests_toml)
 
-        count = execute_generators(problem, tests_toml)
+        count = execute_generators(problem, tests_toml, conn=db)
         assert count == 3  # 1 manual + 2 generated
 
         # Verify manual test on disk
@@ -353,7 +353,7 @@ int main(int argc, char* argv[]) {
         )
         write_tests_toml("crash-gen", tests_toml)
 
-        count = execute_generators(problem, tests_toml)
+        count = execute_generators(problem, tests_toml, conn=db)
         # Only the manual test should be created, generator is skipped
         assert count == 1
         tests = TestCase.find_by_problem(db, problem.id)
@@ -390,7 +390,7 @@ int main(int argc, char* argv[]) {
             ],
         )
         write_tests_toml("multi-gen", tests_toml)
-        count = execute_generators(problem, tests_toml)
+        count = execute_generators(problem, tests_toml, conn=db)
         assert count == 5
 
         # All 5 inputs should be different (different seeds)
@@ -519,7 +519,7 @@ int main(int argc, char* argv[]) {
             ],
         )
         write_tests_toml("val-skip", tests_toml)
-        count = execute_generators(problem, tests_toml)
+        count = execute_generators(problem, tests_toml, conn=db)
 
         # Only the valid manual test should be created; generator tests skipped
         assert count == 1

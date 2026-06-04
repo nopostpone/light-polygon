@@ -52,6 +52,7 @@ def add(
             conn, problem_id=problem.id, name=sol_name,
             language=lang, source_path=rel_path, tag=tag,
         )
+        conn.commit()
         console.print(f"[green]Solution '{sol_name}' ({lang}, {tag}) added to '{slug}'.[/green]")
     finally:
         conn.close()
@@ -112,6 +113,7 @@ def delete(
             raise typer.Exit(1)
 
         sol.delete(conn)
+        conn.commit()
         console.print(f"[green]Solution '{name}' deleted from '{slug}'.[/green]")
     finally:
         conn.close()
@@ -144,6 +146,7 @@ def tag(
 
         sol.tag = new_tag
         sol.save(conn)
+        conn.commit()
         console.print(f"[green]Solution '{name}' tag updated to '{new_tag}'.[/green]")
     finally:
         conn.close()

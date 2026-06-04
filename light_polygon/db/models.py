@@ -47,7 +47,6 @@ class User:
             "INSERT INTO users (username, password_hash, display_name, role) VALUES (?, ?, ?, ?)",
             (username, password_hash, display_name, role),
         )
-        conn.commit()
         row = conn.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
         return cls.from_row(dict(row))
 
@@ -109,7 +108,6 @@ class Problem:
                VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (slug, title, time_limit_ms, memory_limit_mb, input_file, output_file, owner_id),
         )
-        conn.commit()
         row = conn.execute("SELECT * FROM problems WHERE slug = ?", (slug,)).fetchone()
         return cls.from_row(dict(row))
 
@@ -148,11 +146,9 @@ class Problem:
             (self.title, self.time_limit_ms, self.memory_limit_mb,
              self.input_file, self.output_file, int(self.is_private), self.id),
         )
-        conn.commit()
 
     def delete(self, conn: sqlite3.Connection) -> None:
         conn.execute("DELETE FROM problems WHERE id = ?", (self.id,))
-        conn.commit()
 
 
 # ─── Solution ──────────────────────────────────────────────────────
@@ -188,7 +184,6 @@ class Solution:
                VALUES (?, ?, ?, ?, ?, ?)""",
             (problem_id, name, language, source_path, tag, description),
         )
-        conn.commit()
         row = conn.execute(
             "SELECT * FROM solutions WHERE problem_id = ? AND name = ?",
             (problem_id, name),
@@ -215,11 +210,9 @@ class Solution:
             "UPDATE solutions SET tag=?, description=? WHERE id=?",
             (self.tag, self.description, self.id),
         )
-        conn.commit()
 
     def delete(self, conn: sqlite3.Connection) -> None:
         conn.execute("DELETE FROM solutions WHERE id = ?", (self.id,))
-        conn.commit()
 
 
 # ─── Test (test case) ──────────────────────────────────────────────
@@ -259,7 +252,6 @@ class TestCase:
                VALUES (?, ?, ?, ?, ?, ?)""",
             (problem_id, test_index, testset, description, generator, int(is_sample)),
         )
-        conn.commit()
         row = conn.execute(
             "SELECT * FROM tests WHERE problem_id = ? AND testset = ? AND test_index = ?",
             (problem_id, testset, test_index),
@@ -295,11 +287,9 @@ class TestCase:
             (self.testset, self.description, self.generator,
              int(self.is_sample), int(self.verified), self.id),
         )
-        conn.commit()
 
     def delete(self, conn: sqlite3.Connection) -> None:
         conn.execute("DELETE FROM tests WHERE id = ?", (self.id,))
-        conn.commit()
 
 
 # ─── Invocation ────────────────────────────────────────────────────
@@ -332,7 +322,6 @@ class Invocation:
             (problem_id, solution_id, test_id, verdict, score,
              cpu_time_ms, wall_time_ms, memory_kb, exit_code, output_hash, error_text),
         )
-        conn.commit()
         row = conn.execute(
             "SELECT * FROM invocations WHERE id = last_insert_rowid()"
         ).fetchone()

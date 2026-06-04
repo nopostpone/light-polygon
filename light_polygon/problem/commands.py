@@ -44,6 +44,7 @@ def create(
             input_file=input_file, output_file=output_file,
             is_private=private,
         )
+        conn.commit()
         console.print(f"[green]Problem '{problem.slug}' created.[/green]")
         console.print(f"  Directory: {get_connection.__module__}")
         from light_polygon.problem.layout import problem_dir
@@ -161,6 +162,7 @@ def edit(
 
         if changed:
             problem.save(conn)
+            conn.commit()
             console.print(f"[green]Problem '{slug}' updated.[/green]")
         else:
             console.print("[dim]No changes specified.[/dim]")
@@ -190,6 +192,7 @@ def delete(
 
         mgr = ProblemManager(conn)
         mgr.delete(slug)
+        conn.commit()
         console.print(f"[green]Problem '{slug}' deleted.[/green]")
     except ProblemError as e:
         console.print(f"[red]{e}[/red]")

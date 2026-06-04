@@ -44,6 +44,7 @@ def register(
 
         mgr = UserManager(conn)
         user = mgr.register(username, password, display_name)
+        conn.commit()
         console.print(f"[green]User '{user.username}' registered successfully.[/green]")
     except AuthError as e:
         console.print(f"[red]{e}[/red]")

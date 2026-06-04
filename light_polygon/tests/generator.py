@@ -149,9 +149,11 @@ def _make_seed(gen_name: str, inv_idx: int, i: int) -> int:
     return base + inv_idx * 100000 + i
 
 
-def execute_generators(problem: Problem, tests_toml: TestsToml) -> int:
+def execute_generators(problem: Problem, tests_toml: TestsToml, conn: sqlite3.Connection | None = None) -> int:
     created = 0
-    conn = get_connection()
+    should_close = conn is None
+    if conn is None:
+        conn = get_connection()
     try:
         mgr = TestManager(conn, problem.slug)
         working_dir = layout.problem_dir(problem.slug)
@@ -250,6 +252,8 @@ def execute_generators(problem: Problem, tests_toml: TestsToml) -> int:
                     )
                     created += 1
     finally:
-        conn.close()
+        conn.commit()
+        if should_close:
+            conn.close()
 
     return created

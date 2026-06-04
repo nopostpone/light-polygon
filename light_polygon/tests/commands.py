@@ -50,6 +50,7 @@ def add(
             problem.id, idx, input_data, answer_data,
             description=description, is_sample=sample,
         )
+        conn.commit()
         console.print(f"[green]Test #{tc.test_index} added to '{slug}'.[/green]")
     finally:
         conn.close()
@@ -114,6 +115,7 @@ def delete(
         mgr = TestManager(conn, slug)
         mgr.delete_files(test_index)
         tc.delete(conn)
+        conn.commit()
         console.print(f"[green]Test #{test_index} deleted from '{slug}'.[/green]")
     finally:
         conn.close()
@@ -142,6 +144,7 @@ def sample(
 
         tc.is_sample = on
         tc.save(conn)
+        conn.commit()
         status = "sample" if on else "not sample"
         console.print(f"[green]Test #{test_index} is now {status}.[/green]")
     finally:
