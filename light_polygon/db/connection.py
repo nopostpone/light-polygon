@@ -30,11 +30,13 @@ def init_db() -> None:
         cur = conn.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_version'"
         )
-        if cur.fetchone() is not None:
-            return
-        schema = SCHEMA_SQL.read_text(encoding="utf-8")
-        conn.executescript(schema)
-        conn.commit()
+        if cur.fetchone() is None:
+            schema = SCHEMA_SQL.read_text(encoding="utf-8")
+            conn.executescript(schema)
+            conn.commit()
+
+        from light_polygon.db.migrations import run_migrations
+        run_migrations(conn)
     finally:
         conn.close()
 

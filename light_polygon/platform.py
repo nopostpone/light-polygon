@@ -48,17 +48,17 @@ def make_resource_limit_setter(time_limit_ms: int, memory_limit_mb: int) -> Call
 
     def _set_limits() -> None:
         try:
-            import resource
+            import resource  # type: ignore[import-not-found]
 
             cpu_seconds = time_limit_ms / 1000.0 + 1
-            resource.setrlimit(
-                resource.RLIMIT_CPU, (int(cpu_seconds) + 1, int(cpu_seconds) + 2)
+            resource.setrlimit(  # type: ignore
+                resource.RLIMIT_CPU, (int(cpu_seconds) + 1, int(cpu_seconds) + 2)  # type: ignore
             )
             mem_bytes = memory_limit_mb * 1024 * 1024
-            resource.setrlimit(resource.RLIMIT_AS, (mem_bytes * 2, mem_bytes * 2))
-            resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
-            resource.setrlimit(resource.RLIMIT_FSIZE, (64 * 1024 * 1024, 64 * 1024 * 1024))
-        except (ImportError, ValueError, resource.error):
+            resource.setrlimit(resource.RLIMIT_AS, (mem_bytes * 2, mem_bytes * 2))  # type: ignore
+            resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))  # type: ignore
+            resource.setrlimit(resource.RLIMIT_FSIZE, (64 * 1024 * 1024, 64 * 1024 * 1024))  # type: ignore
+        except (ImportError, ValueError, resource.error):  # type: ignore
             pass
 
     return _set_limits

@@ -129,6 +129,7 @@ def judge_solution(
         return results
 
     sol_executable = compile_result.executable_path
+    assert sol_executable is not None
 
     for test in tests:
         sandbox_result = _run_solution(problem, solution, test, sol_executable)
@@ -161,6 +162,9 @@ def judge_solution(
             sandbox_result.stdout.encode("utf-8", errors="replace")
         ).hexdigest()
 
+        assert problem.id is not None
+        assert solution.id is not None
+        assert test.id is not None
         invocation = Invocation.create(
             conn,
             problem_id=problem.id,

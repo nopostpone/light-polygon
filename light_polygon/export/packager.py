@@ -70,6 +70,8 @@ def export_package(
             _add_dir(zf, problem_dir / "tests", f"{slug}/tests")
             _add_solutions(zf, problem_dir, slug, ac_names)
             _add_dir(zf, problem_dir / "files", f"{slug}/files")
+            _add_dir(zf, problem_dir / "generators", f"{slug}/generators")
+            _add_dir(zf, problem_dir / "checkers", f"{slug}/checkers")
             _add_problem_json(zf, slug, toml_data)
             print_summary(zf, slug)
         else:
