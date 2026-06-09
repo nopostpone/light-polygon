@@ -16,7 +16,17 @@ def problem_toml_path(slug: str) -> Path:
     return problem_dir(slug) / "problem.toml"
 
 
-def statement_path(slug: str) -> Path:
+def statement_path(slug: str, lang: str = "") -> Path:
+    """Return the path to the problem statement.
+
+    Args:
+        slug: Problem slug.
+        lang: Language code (e.g. 'en', 'zh', 'ru').
+              Defaults to '' which maps to 'statement.md'.
+              Non-empty maps to 'statement-{lang}.md'.
+    """
+    if lang:
+        return problem_dir(slug) / f"statement-{lang}.md"
     return problem_dir(slug) / "statement.md"
 
 

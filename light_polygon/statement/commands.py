@@ -45,6 +45,13 @@ def _open_editor(filepath: Path) -> None:
 @statement_app.command()
 def edit(
     slug: str = typer.Argument(..., help="Problem slug"),
+    lang: str = typer.Option(
+        "",
+        "--lang",
+        "-l",
+        help="Language code for multi-language statements (e.g. 'en', 'zh', 'ru'). "
+        "Edits statement-{lang}.md instead of statement.md.",
+    ),
 ) -> None:
     """Open the problem statement in your editor."""
     require_user()
@@ -58,7 +65,7 @@ def edit(
     finally:
         conn.close()
 
-    st_path = layout.statement_path(slug)
+    st_path = layout.statement_path(slug, lang)
     if not st_path.exists():
         st_path.parent.mkdir(parents=True, exist_ok=True)
         st_path.write_text(
@@ -82,6 +89,12 @@ def preview(
     raw: bool = typer.Option(
         False, "--raw", "-r", help="Show raw markdown without terminal rendering"
     ),
+    lang: str = typer.Option(
+        "",
+        "--lang",
+        "-l",
+        help="Language code for multi-language statements (e.g. 'en', 'zh', 'ru').",
+    ),
 ) -> None:
     """Preview the problem statement in the terminal."""
     init_db()
@@ -94,7 +107,7 @@ def preview(
     finally:
         conn.close()
 
-    st_path = layout.statement_path(slug)
+    st_path = layout.statement_path(slug, lang)
     if not st_path.exists():
         console.print(
             "[yellow]No statement file found. Run 'lp statement edit' first.[/yellow]"
@@ -120,6 +133,14 @@ def export(
     output: str = typer.Option(
         "", "--output", "-o", help="Output file path (auto-generated if omitted)"
     ),
+    lang: str = typer.Option(
+        "",
+        "--lang",
+        "-l",
+        help="Language code for multi-language statements (e.g. 'en', 'zh', 'ru'). "
+        "Exports statement-{lang}.md instead of statement.md. "
+        "Auto-appended to output filename when --output is not specified.",
+    ),
 ) -> None:
     """Export the problem statement to HTML or LaTeX."""
     init_db()
@@ -132,15 +153,18 @@ def export(
     finally:
         conn.close()
 
-    st_path = layout.statement_path(slug)
+    st_path = layout.statement_path(slug, lang)
     if not st_path.exists():
+        lang_hint = f" (lang='{lang}')" if lang else ""
         console.print(
-            "[yellow]No statement file found. Run 'lp statement edit' first.[/yellow]"
+            f"[yellow]No statement file found{lang_hint}."
+            " Run 'lp statement edit' first.[/yellow]"
         )
         raise typer.Exit(1)
 
     md_text = st_path.read_text(encoding="utf-8")
-    title = problem.title
+    # For translated statements, use "title (LANG)" as the page title
+    title = f"{problem.title} ({lang.upper()})" if lang else problem.title
 
     if fmt == "html":
         result = render_html_page(md_text, title)
@@ -155,7 +179,8 @@ def export(
     if output:
         out_path = Path(output)
     else:
-        out_path = layout.problem_dir(slug) / f"statement{ext}"
+        lang_suffix = f"-{lang}" if lang else ""
+        out_path = layout.problem_dir(slug) / f"statement{lang_suffix}{ext}"
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(result, encoding="utf-8")

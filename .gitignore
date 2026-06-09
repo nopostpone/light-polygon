@@ -28,3 +28,6 @@ problems/
 
 # Temporary files (generated at project root)
 /statement.html
+
+# Audit
+.audit/
